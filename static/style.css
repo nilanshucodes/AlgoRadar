@@ -1,0 +1,130 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    margin: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+form {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+form label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+form input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+form select {
+    margin-left: 10px;
+    padding: 3px 5px;
+}
+
+form button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+/* Table view */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th, table td {
+    border: 1px solid #ccc;
+    padding: 8px 10px;
+    text-align: center;
+}
+
+table th {
+    background-color: #007bff;
+    color: white;
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Card view */
+.card-container {
+    display: none;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.contest-card {
+    width: 250px;
+    padding: 15px;
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+}
+
+.contest-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+.platform-codeforces { background-color: #1f8ef1; }
+.platform-codechef { background-color: #fb641b; }
+.platform-atcoder { background-color: #3c3c3c; }
+.platform-leetcode { background-color: #ffa116; }
+
+/* Switch button */
+#switchBtn {
+    display: block;
+    margin: 0 auto 20px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+}
+/* Show card view by default on small screens */
+@media (max-width: 768px) {
+    table#contestTable {
+        display: none;
+    }
+    .card-container {
+        display: flex;
+    }
+}
+.table-logo {
+    width: 25px;
+    height: 25px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+/* Footer */
+footer {
+    text-align:center;
+    margin-top:20px;
+    padding:10px;
+    background:#f5f5f5;
+    border-top:1px solid #ddd;
+}
