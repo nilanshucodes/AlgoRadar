@@ -14,6 +14,16 @@ USERNAME = "nilanshucodes"
 IST = pytz.timezone('Asia/Kolkata')
 
 
+# Make datetime available in all templates
+@app.context_processor
+def inject_now():
+    now_ist = datetime.now(IST)
+    return {
+        'datetime': datetime,
+        'now_ist': now_ist
+    }
+
+
 @app.route("/", methods=["GET"])
 def index():
     platform_filter = request.args.getlist("platform")  # e.g., ['codeforces.com', 'atcoder.jp']
@@ -57,7 +67,7 @@ def index():
     # Sort by start date-time
     filtered.sort(key=lambda x: datetime.strptime(x['start_date'] + ' ' + x['start_time'], "%d-%m-%Y %H:%M"))
 
-    # Limit to next 20 contests  per platform
+    # Limit to next 20 contests per platform
     limited = []
     count_per_platform = defaultdict(int)
     for c in filtered:
