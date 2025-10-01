@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash, redirect, url_for
 import requests
 from datetime import datetime, timedelta
 import pytz
@@ -10,6 +10,7 @@ load_dotenv()  # Load from .env
 
 app = Flask(__name__)
 load_dotenv(dotenv_path="/Users/nilanshu/Desktop/contest_tracker_fallback/.env", override=True)# override=True ensures old env vars are replaced
+app.secret_key = os.getenv("SECRET_KEY")
 # Your CList API key
 API_KEY =os.getenv("CLIST_API_KEY")
 USERNAME = os.getenv("CLIST_USERNAME")
@@ -81,6 +82,73 @@ def index():
 
     return render_template("index.html", contests=limited, platforms=platform_filter, time_filter=time_filter)
 
+
+# ========================================
+# CONTACT PAGE ROUTE
+# ========================================
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    if request.method == 'POST':
+        # Get form data
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
+        message = request.form.get('message', '').strip()
+
+        # Validate input
+        if not name or not email or not message:
+            flash('All fields are required!', 'error')
+            return redirect(url_for('contact'))
+
+        if len(name) < 2:
+            flash('Name must be at least 2 characters long.', 'error')
+            return redirect(url_for('contact'))
+
+        if '@' not in email or '.' not in email:
+            flash('Please enter a valid email address.', 'error')
+            return redirect(url_for('contact'))
+
+        if len(message) < 10:
+            flash('Message must be at least 10 characters long.', 'error')
+            return redirect(url_for('contact'))
+
+        # Save contact submission
+        try:
+            save_contact_to_file(name, email, message)
+            flash('Thank you for contacting us! We\'ll get back to you soon.', 'success')
+
+            # Optional: Send email notification
+            # Uncomment the line below if you set up email
+            # send_email_notification(name, email, message)
+
+        except Exception as e:
+            print(f"Error saving contact: {e}")
+            flash('There was an error processing your request. Please try again.', 'error')
+
+        return redirect(url_for('contact'))
+
+    # GET request - show the contact form
+    return render_template('contact.html')
+
+
+def save_contact_to_file(name, email, message):
+    """
+    Save contact form submission to a text file.
+    This is a simple method good for small-scale deployments.
+    For production, consider using a database.
+    """
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    try:
+        with open('contact_submissions.txt', 'a', encoding='utf-8') as f:
+            f.write(f"\n{'=' * 60}\n")
+            f.write(f"Timestamp: {timestamp}\n")
+            f.write(f"Name: {name}\n")
+            f.write(f"Email: {email}\n")
+            f.write(f"Message:\n{message}\n")
+            f.write(f"{'=' * 60}\n")
+    except Exception as e:
+        print(f"Error writing to file: {e}")
+        raise
 
 if __name__ == "__main__":
     app.run(debug=True)
