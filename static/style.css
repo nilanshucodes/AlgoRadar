@@ -4,9 +4,10 @@ body {
     margin: 20px;
 }
 
-h1 {
-    text-align: center;
-    color: #333;
+h1.text-center {
+    text-align: left;
+    font-size: 28px;
+    font-weight: 700;
 }
 
 form {
@@ -21,6 +22,7 @@ form label {
 
 form input[type="checkbox"] {
     margin-right: 5px;
+    margin-bottom:5px
 }
 
 form select {
@@ -118,6 +120,13 @@ table tr:nth-child(even) {
     object-fit: contain;
     vertical-align: middle;
     margin-right: 5px;
+}
+h2.text-center {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #007bff;  /* Optional color */
 }
 
 /* Footer */
