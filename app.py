@@ -6,10 +6,10 @@ from collections import defaultdict
 import os
 from dotenv import load_dotenv
 
-load_dotenv()  # ✅ Load from .env
+load_dotenv()  # Load from .env
 
 app = Flask(__name__)
-
+load_dotenv(dotenv_path="/Users/nilanshu/Desktop/contest_tracker_fallback/.env", override=True)# override=True ensures old env vars are replaced
 # Your CList API key
 API_KEY =os.getenv("CLIST_API_KEY")
 USERNAME = os.getenv("CLIST_USERNAME")
