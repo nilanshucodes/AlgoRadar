@@ -5,9 +5,21 @@
     <title>{% block title %}AlgoRadar{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+<header>
+  <div class="header-container">
+    <h1 class="logo">AlgoRadar</h1>
+    <nav>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><button id="themeToggle">🌙</button></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
 <body>
     <!-- Dark/Light toggle button -->
-    <button id="themeToggle" class="theme-btn">🌙</button>
     <main>
         {% block content %}{% endblock %}
     </main>
