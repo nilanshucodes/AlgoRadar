@@ -137,3 +137,49 @@ footer {
     background:#f5f5f5;
     border-top:1px solid #ddd;
 }
+
+/* Dark Mode */
+body.dark {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark table {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+body.dark table th {
+    background-color: #333;
+    color: #fff;
+}
+
+body.dark table tr:nth-child(even) {
+    background-color: #222;
+}
+
+body.dark .contest-card {
+    box-shadow: 0 4px 8px rgba(255,255,255,0.1);
+}
+
+body.dark footer {
+    background-color: #1a1a1a;
+    color: #aaa;
+    border-top: 1px solid #333;
+}
+
+/* Toggle button style */
+.theme-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    z-index: 999;
+    font-size: 16px;
+}
+
