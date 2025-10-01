@@ -2,39 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AlgoRadar{% endblock %}</title>
+    <meta name="description" content="Track upcoming coding contests from Codeforces, CodeChef, AtCoder, and LeetCode">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<header>
-  <div class="header-container">
-    <h1 class="logo">AlgoRadar</h1>
-    <nav>
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/contact">Contact</a></li>
-        <li><button id="themeToggle">🌙</button></li>
-      </ul>
-    </nav>
-  </div>
-</header>
-
 <body>
-    <!-- Dark/Light toggle button -->
+    <header>
+        <div class="header-container">
+            <h1 class="logo">AlgoRadar</h1>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li><button id="themeToggle">🌙</button></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
     <main>
         {% block content %}{% endblock %}
     </main>
 
     <footer>
-        <p>&copy; {{ datetime.utcnow().year }} AlgoRadar | Built with Flask | <a href="https://github.com/nilanshucodes">Github</a></p>
+        <p>&copy; {{ datetime.utcnow().year }} AlgoRadar | Built with Flask | <a href="https://github.com/nilanshucodes" target="_blank">Github</a></p>
     </footer>
+
     <script>
         const themeToggle = document.getElementById('themeToggle');
         const currentTheme = localStorage.getItem('theme') || 'light';
 
         // Apply saved theme on load
-        document.body.classList.add(currentTheme);
-        themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+        if (currentTheme === 'dark') {
+            document.body.classList.add('dark');
+            themeToggle.textContent = '☀️';
+        } else {
+            themeToggle.textContent = '🌙';
+        }
 
+        // Toggle theme
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark');
             const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
