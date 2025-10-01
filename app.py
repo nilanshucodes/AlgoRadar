@@ -3,12 +3,16 @@ import requests
 from datetime import datetime, timedelta
 import pytz
 from collections import defaultdict
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # ✅ Load from .env
 
 app = Flask(__name__)
 
 # Your CList API key
-API_KEY = "b9e571e435c1f386872b651fc683c0bbf80ecc1a"
-USERNAME = "nilanshucodes"
+API_KEY =os.getenv("CLIST_API_KEY")
+USERNAME = os.getenv("CLIST_USERNAME")
 
 # Timezone conversion: UTC → IST
 IST = pytz.timezone('Asia/Kolkata')
