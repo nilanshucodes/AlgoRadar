@@ -1,171 +1,70 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Upcoming Contests</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 20px;
-        }
+{% extends "base.html" %}
+{% block title %}AlgoRadar{% endblock %}
+{% block content %}
+{% set platform_logos = {
+    'codeforces.com': url_for('static', filename='images/codeforces.png'),
+    'codechef.com': url_for('static', filename='images/codechef.png'),
+    'atcoder.jp': url_for('static', filename='images/atcoder.png'),
+    'leetcode.com': url_for('static', filename='images/leetcode.png')
+} %}
 
-        h1 {
-            text-align: center;
-            color: #333;
-        }
 
-        form {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+<div class="container my-4">
+    <h1 class="mb-3 text-left">AlgoRadar</h1>
+    <h2 class="mb-3 text-center">UPCOMING CONTESTS</h2>
 
-        form label {
-            font-weight: bold;
-            margin-right: 5px;
-        }
 
-        form input[type="checkbox"] {
-            margin-right: 5px;
-        }
-
-        form select {
-            margin-left: 10px;
-            padding: 3px 5px;
-        }
-
-        form button {
-            margin-left: 10px;
-            padding: 5px 10px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-        }
-
-        /* Table view */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table th, table td {
-            border: 1px solid #ccc;
-            padding: 8px 10px;
-            text-align: center;
-        }
-
-        table th {
-            background-color: #007bff;
-            color: white;
-        }
-
-        table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        /* Card view */
-        .card-container {
-            display: none;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .contest-card {
-            width: 250px;
-            padding: 15px;
-            border-radius: 10px;
-            color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .contest-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-        }
-
-        .platform-codeforces { background-color: #1f8ef1; }
-        .platform-codechef { background-color: #fb641b; }
-        .platform-atcoder { background-color: #3c3c3c; }
-        .platform-leetcode { background-color: #ffa116; }
-
-        /* Switch button */
-        #switchBtn {
-            display: block;
-            margin: 0 auto 20px;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            background-color: #28a745;
-            color: white;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <h1>Upcoming Coding Contests</h1>
-
-    <form method="get">
-        <label>Platforms:</label>
-        <!-- Default to 4 main platforms -->
-        <input type="checkbox" name="platform" value="codeforces.com"
-            {% if not platforms or 'codeforces.com' in platforms %}checked{% endif %}> Codeforces
-        <input type="checkbox" name="platform" value="codechef.com"
-            {% if not platforms or 'codechef.com' in platforms %}checked{% endif %}> CodeChef
-        <input type="checkbox" name="platform" value="atcoder.jp"
-            {% if not platforms or 'atcoder.jp' in platforms %}checked{% endif %}> AtCoder
-        <input type="checkbox" name="platform" value="leetcode.com"
-            {% if not platforms or 'leetcode.com' in platforms %}checked{% endif %}> LeetCode
-        <!-- Any other platforms will remain unchecked unless selected -->
-        {% for p in all_platforms %}
-            {% if p not in ['codeforces.com','codechef.com','atcoder.jp','leetcode.com'] %}
-                <input type="checkbox" name="platform" value="{{ p }}"
-                    {% if p in platforms %}checked{% endif %}> {{ p }}
-            {% endif %}
-        {% endfor %}
-        <br><br>
-        <label>Time:</label>
-        <select name="time">
-            <option value="" {% if not time_filter %}selected{% endif %}>All</option>
-            <option value="today" {% if time_filter == 'today' %}selected{% endif %}>Today</option>
-            <option value="week" {% if time_filter == 'week' %}selected{% endif %}>This Week</option>
-            <option value="month" {% if time_filter == 'month' %}selected{% endif %}>This Month</option>
-        </select>
-        <button type="submit">Filter</button>
+    <!-- Filters -->
+    <form method="get" class="mb-3">
+        <div class="d-flex flex-wrap gap-2">
+            <label><input type="checkbox" name="platform" value="codeforces.com" {% if 'codeforces.com' in platforms %}checked{% endif %}> Codeforces</label>
+            <label><input type="checkbox" name="platform" value="atcoder.jp" {% if 'atcoder.jp' in platforms %}checked{% endif %}> AtCoder</label>
+            <label><input type="checkbox" name="platform" value="leetcode.com" {% if 'leetcode.com' in platforms %}checked{% endif %}> LeetCode</label>
+            <label><input type="checkbox" name="platform" value="codechef.com" {% if 'codechef.com' in platforms %}checked{% endif %}> CodeChef</label>
+            <label><input type="checkbox" name="platform" value="" {% if not platforms %}checked{% endif %}> All Contests</label>
+        </div>
+        <div class="mt-2">
+            <select name="time" class="form-select w-auto d-inline">
+                <option value="">All Time</option>
+                <option value="today" {% if time_filter == 'today' %}selected{% endif %}>Today</option>
+                <option value="week" {% if time_filter == 'week' %}selected{% endif %}>This Week</option>
+                <option value="month" {% if time_filter == 'month' %}selected{% endif %}>This Month</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+        </div>
     </form>
 
     <button id="switchBtn">Switch to Card View</button>
 
-    <!-- Table view -->
-    <table id="contestTable">
-        <tr>
-            <th>Platform</th>
-            <th>Event</th>
-            <th>Date (IST)</th>
-            <th>Start Time (IST)</th>
-            <th>End (IST)</th>
-            <th>Link</th>
-        </tr>
-        {% for c in contests %}
-            {% if c.resource in ['codeforces.com','codechef.com','atcoder.jp','leetcode.com'] or c.resource in platforms %}
+    <!-- Table -->
+    <table id="contestTable" class="table table-bordered table-hover">
+        <thead class="table-dark">
             <tr>
-                <td>{{ c.resource }}</td>
-                <td>{{ c.event }}</td>
-                <td>{{ c.start_date }}</td>
-                <td>{{ c.start_time }}</td>
-                <td>{{ c.end_ist }}</td>
-                <td><a href="{{ c.href }}" target="_blank">Link</a></td>
+                <th>Platform</th>
+                <th>Contest</th>
+                <th>Date</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Link</th>
             </tr>
-            {% endif %}
-        {% endfor %}
+        </thead>
+        <tbody>
+            {% for contest in contests %}
+            <tr>
+                <td>
+                    {% if contest.resource in platform_logos %}
+                         <img src="{{ platform_logos[contest.resource] }}" alt="{{ contest.resource }}" class="table-logo">
+                    {% endif %}
+                    {{ contest.resource }}
+                </td>
+                <td>{{ contest.event }}</td>
+                <td>{{ contest.start_date }}</td>
+                <td> {{ contest.start_time }}</td>
+                <td>{{ contest.end_ist }}</td>
+                <td><a href="{{ contest.href }}" target="_blank" class="btn btn-sm btn-outline-primary">Visit</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 
     <!-- Card view -->
@@ -199,5 +98,5 @@
             tableView = !tableView;
         });
     </script>
-</body>
-</html>
+</div>
+{% endblock %}
