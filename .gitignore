@@ -1,0 +1,9 @@
+# Ignore environment variables
+.env
+
+# Ignore IDE and OS files
+.idea/
+.DS_Store
+
+# Ignore virtual environment
+.venv/
