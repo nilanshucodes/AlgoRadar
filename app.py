@@ -1,25 +1,79 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, session
+from functools import wraps
 import requests
 from datetime import datetime, timedelta
 import pytz
 from collections import defaultdict
 import os
 from dotenv import load_dotenv
+from flask_sqlalchemy import SQLAlchemy
+from flask_caching import Cache
 
-load_dotenv()  # Load from .env
+load_dotenv()
 
 app = Flask(__name__)
-load_dotenv(dotenv_path="/Users/nilanshu/Desktop/contest_tracker_fallback/.env", override=True)# override=True ensures old env vars are replaced
 app.secret_key = os.getenv("SECRET_KEY")
-# Your CList API key
-API_KEY =os.getenv("CLIST_API_KEY")
+
+# API Configuration
+API_KEY = os.getenv("CLIST_API_KEY")
 USERNAME = os.getenv("CLIST_USERNAME")
 
-# Timezone conversion: UTC → IST
+# Admin Configuration
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME" )
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+
+#DataBase Configuration
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///fallback.db'
+
+db = SQLAlchemy(app)
+
+# Cache Configuration
+cache = Cache(app, config={
+    'CACHE_TYPE': 'SimpleCache',
+    'CACHE_DEFAULT_TIMEOUT': 600
+})
+
 IST = pytz.timezone('Asia/Kolkata')
 
 
-# Make datetime available in all templates
+# ========================================
+# DATABASE MODELS
+# ========================================
+class ContactMessage(db.Model):
+    __tablename__ = 'contact_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(IST))
+    read = db.Column(db.Boolean, default=False, nullable=False)
+
+    def __repr__(self):
+        return f'<ContactMessage {self.name} - {self.email}>'
+
+
+# ========================================
+# ADMIN AUTHENTICATION DECORATOR
+# ========================================
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('admin_logged_in'):
+            flash('Please log in to access the admin panel.', 'error')
+            return redirect(url_for('admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+# ========================================
+# CONTEXT PROCESSOR
+# ========================================
 @app.context_processor
 def inject_now():
     now_ist = datetime.now(IST)
@@ -29,15 +83,35 @@ def inject_now():
     }
 
 
+# ========================================
+# CACHED API CALL FUNCTION
+# ========================================
+@cache.cached(timeout=600, key_prefix='all_contests')
+def fetch_contests_from_api():
+    url = f"https://clist.by/api/v2/contest/?username={USERNAME}&api_key={API_KEY}&upcoming=true&limit=500&order_by=start"
+
+    try:
+        print("🔄 Fetching fresh data from CList API...")
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        contests = response.json().get("objects", [])
+        print(f"✅ Fetched {len(contests)} contests from API")
+        return contests
+    except requests.RequestException as e:
+        print(f"❌ Error fetching contests: {e}")
+        return []
+
+
+# ========================================
+# MAIN ROUTES
+# ========================================
 @app.route("/", methods=["GET"])
 def index():
-    platform_filter = request.args.getlist("platform")  # e.g., ['codeforces.com', 'atcoder.jp']
-    time_filter = request.args.get("time")  # 'today', 'week', 'month', or None
+    platform_filter = request.args.getlist("platform")
+    time_filter = request.args.get("time")
 
-    # Fetch upcoming contests from CList
-    url = f"https://clist.by/api/v2/contest/?username={USERNAME}&api_key={API_KEY}&upcoming=true&limit=500&order_by=start"
-    response = requests.get(url)
-    contests = response.json().get("objects", [])
+    # Use cached API call
+    contests = fetch_contests_from_api()
 
     filtered = []
     for c in contests:
@@ -63,13 +137,11 @@ def index():
                     start_ist.date() > (now + timedelta(days=30)).date() or start_ist.date() < now.date()):
                 continue
 
-        # Add formatted date & time
         c['start_date'] = start_ist.strftime("%d-%m-%Y")
         c['start_time'] = start_ist.strftime("%H:%M")
         c['end_ist'] = end_ist.strftime("%H:%M")
         filtered.append(c)
 
-    # Sort by start date-time
     filtered.sort(key=lambda x: datetime.strptime(x['start_date'] + ' ' + x['start_time'], "%d-%m-%Y %H:%M"))
 
     # Limit to next 20 contests per platform
@@ -83,13 +155,9 @@ def index():
     return render_template("index.html", contests=limited, platforms=platform_filter, time_filter=time_filter)
 
 
-# ========================================
-# CONTACT PAGE ROUTE
-# ========================================
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
     if request.method == 'POST':
-        # Get form data
         name = request.form.get('name', '').strip()
         email = request.form.get('email', '').strip()
         message = request.form.get('message', '').strip()
@@ -111,44 +179,95 @@ def contact():
             flash('Message must be at least 10 characters long.', 'error')
             return redirect(url_for('contact'))
 
-        # Save contact submission
         try:
-            save_contact_to_file(name, email, message)
-            flash('Thank you for contacting us! We\'ll get back to you soon.', 'success')
+            new_message = ContactMessage(
+                name=name,
+                email=email,
+                message=message
+            )
+            db.session.add(new_message)
+            db.session.commit()
 
-            # Optional: Send email notification
-            # Uncomment the line below if you set up email
-            # send_email_notification(name, email, message)
+            flash('Thank you for contacting us! We\'ll get back to you soon.', 'success')
+            print(f"📧 New contact message from {name} ({email})")
 
         except Exception as e:
-            print(f"Error saving contact: {e}")
+            db.session.rollback()
+            print(f"❌ Error saving contact message: {e}")
             flash('There was an error processing your request. Please try again.', 'error')
 
         return redirect(url_for('contact'))
 
-    # GET request - show the contact form
     return render_template('contact.html')
 
 
-def save_contact_to_file(name, email, message):
-    """
-    Save contact form submission to a text file.
-    This is a simple method good for small-scale deployments.
-    For production, consider using a database.
-    """
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+# ========================================
+# ADMIN ROUTES
+# ========================================
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
 
-    try:
-        with open('contact_submissions.txt', 'a', encoding='utf-8') as f:
-            f.write(f"\n{'=' * 60}\n")
-            f.write(f"Timestamp: {timestamp}\n")
-            f.write(f"Name: {name}\n")
-            f.write(f"Email: {email}\n")
-            f.write(f"Message:\n{message}\n")
-            f.write(f"{'=' * 60}\n")
-    except Exception as e:
-        print(f"Error writing to file: {e}")
-        raise
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['admin_logged_in'] = True
+            flash('Successfully logged in!', 'success')
+            return redirect(url_for('view_messages'))
+        else:
+            flash('Invalid credentials. Please try again.', 'error')
+
+    return render_template('admin_login.html')
+
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_logged_in', None)
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('index'))
+
+
+@app.route('/admin/messages')
+@admin_required
+def view_messages():
+    messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
+    return render_template('admin_messages.html', messages=messages)
+
+
+@app.route('/admin/messages/<int:message_id>/mark-read', methods=['POST'])
+@admin_required
+def mark_message_read(message_id):
+    message = ContactMessage.query.get_or_404(message_id)
+    message.read = True
+    db.session.commit()
+    flash('Message marked as read.', 'success')
+    return redirect(url_for('view_messages'))
+
+
+@app.route('/admin/messages/<int:message_id>/delete', methods=['POST'])
+@admin_required
+def delete_message(message_id):
+    message = ContactMessage.query.get_or_404(message_id)
+    db.session.delete(message)
+    db.session.commit()
+    flash('Message deleted successfully.', 'success')
+    return redirect(url_for('view_messages'))
+
+
+# ========================================
+# DATABASE CLI COMMANDS
+# ========================================
+@app.cli.command('init-db')
+def init_db():
+    db.create_all()
+    print("✅ Database tables created successfully!")
+
+
+@app.cli.command('drop-db')
+def drop_db():
+    db.drop_all()
+    print("🗑️ Database tables dropped!")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Admin - Contact Messages{% endblock %}
+{% block content %}
+
+<div class="container my-4">
+    <div class="admin-header">
+        <h2>📬 Contact Messages ({{ messages|length }})</h2>
+        <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger btn-logout">Logout</a>
+    </div>
+
+    {% if messages %}
+    <div style="overflow-x: auto;">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for msg in messages %}
+                <tr class="{{ 'table-light' if msg.read else '' }}">
+                    <td data-label="ID">{{ msg.id }}</td>
+                    <td data-label="Date">{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td data-label="Name">{{ msg.name }}</td>
+                    <td data-label="Email"><a href="mailto:{{ msg.email }}">{{ msg.email }}</a></td>
+                    <td data-label="Message" style="max-width: 400px; word-wrap: break-word;">{{ msg.message }}</td>
+                    <td data-label="Status">
+                        {% if msg.read %}
+                            <span class="badge bg-success">✓ Read</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">● Unread</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            {% if not msg.read %}
+                            <form method="POST" action="{{ url_for('mark_message_read', message_id=msg.id) }}">
+                                <button type="submit" class="btn-action btn-action-read" title="Mark as read">
+                                    ✓
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            <form method="POST" action="{{ url_for('delete_message', message_id=msg.id) }}"
+                                  onsubmit="return confirm('Delete this message?');">
+                                <button type="submit" class="btn-action btn-action-delete" title="Delete">
+                                    🗑️
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+        <h4>No messages yet</h4>
+        <p class="mb-0">Contact form submissions will appear here.</p>
+    </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">← Back to Home</a>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,5 +1,8 @@
-flask~=3.1.2
-requests~=2.32.5
-pytz~=2025.2
-dotenv~=0.9.9
-python-dotenv~=1.1.1
+Flask
+Flask-SQLAlchemy
+Flask-Caching
+psycopg2-binary
+requests
+python-dotenv
+pytz
+gunicorn
