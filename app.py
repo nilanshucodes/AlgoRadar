@@ -83,7 +83,7 @@ def fetch_contests_from_api():
     url = f"https://clist.by/api/v2/contest/?username={USERNAME}&api_key={API_KEY}&upcoming=true&limit=500&order_by=start"
 
     try:
-        print("🔄 Fetching fresh data from CList API...")  # Debug log
+        print("🔄 Fetching fresh data from CList API...")
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         contests = response.json().get("objects", [])
