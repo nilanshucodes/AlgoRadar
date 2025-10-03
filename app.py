@@ -101,10 +101,8 @@ def index():
     platform_filter = request.args.getlist("platform")
     time_filter = request.args.get("time")
 
-    # Fetch upcoming contests from CList
-    url = f"https://clist.by/api/v2/contest/?username={USERNAME}&api_key={API_KEY}&upcoming=true&limit=500&order_by=start"
-    response = requests.get(url)
-    contests = response.json().get("objects", [])
+    # Use cached API call
+    contests = fetch_contests_from_api()
 
     filtered = []
     for c in contests:
