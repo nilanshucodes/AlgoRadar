@@ -192,9 +192,9 @@ def contact():
                 print(f"📧 New contact message from {name} ({email})")  # Debug log
 
         except Exception as e:
-                db.session.rollback()
-                print(f"❌ Error saving contact message: {e}")
-                flash('There was an error processing your request. Please try again.', 'error')
+            db.session.rollback()
+            print(f"❌ Error saving contact message: {e}")
+            flash('There was an error processing your request. Please try again.', 'error')
 
         return redirect(url_for('contact'))
 
