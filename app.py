@@ -180,13 +180,13 @@ def contact():
 
             # Save to database
         try:
-                new_message = ContactMessage(
-                    name=name,
-                    email=email,
-                    message=message
-                )
-                db.session.add(new_message)
-                db.session.commit()
+            new_message = ContactMessage(
+                name=name,
+                email=email,
+                message=message
+            )
+            db.session.add(new_message)
+            db.session.commit()
 
             flash('Thank you for contacting us! We\'ll get back to you soon.', 'success')
             print(f"📧 New contact message from {name} ({email})")
