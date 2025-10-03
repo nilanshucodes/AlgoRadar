@@ -188,8 +188,8 @@ def contact():
                 db.session.add(new_message)
                 db.session.commit()
 
-                flash('Thank you for contacting us! We\'ll get back to you soon.', 'success')
-                print(f"📧 New contact message from {name} ({email})")  # Debug log
+            flash('Thank you for contacting us! We\'ll get back to you soon.', 'success')
+            print(f"📧 New contact message from {name} ({email})")
 
         except Exception as e:
             db.session.rollback()
