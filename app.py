@@ -5,6 +5,8 @@ import pytz
 from collections import defaultdict
 import os
 from dotenv import load_dotenv
+from flask_sqlalchemy import SQLAlchemy
+from flask_caching import Cache
 
 load_dotenv()  # Load from .env
 
@@ -15,18 +17,83 @@ app.secret_key = os.getenv("SECRET_KEY")
 API_KEY =os.getenv("CLIST_API_KEY")
 USERNAME = os.getenv("CLIST_USERNAME")
 
+# Database Configuration
+# For local development with PostgreSQL:
+# DATABASE_URL=postgresql://username:password@localhost:5432/algoradar
+# For production, your hosting platform will provide this
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///fallback.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Handle PostgreSQL URL format (some platforms use postgres:// instead of postgresql://)
+if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
+    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://', 1)
+
+# Initialize Database
+db = SQLAlchemy(app)
+
+# Cache Configuration
+cache = Cache(app, config={
+    'CACHE_TYPE': 'SimpleCache',  # Use SimpleCache for now, upgrade to Redis later
+    'CACHE_DEFAULT_TIMEOUT': 600  # 10 minutes (600 seconds)
+})
+
 # Timezone conversion: UTC → IST
 IST = pytz.timezone('Asia/Kolkata')
 
 
-# Make datetime available in all templates
+# ========================================
+# DATABASE MODELS
+# ========================================
+class ContactMessage(db.Model):
+    __tablename__ = 'contact_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(IST))
+    read = db.Column(db.Boolean, default=False, nullable=False)
+
+    def __repr__(self):
+        return f'<ContactMessage {self.name} - {self.email}>'
+
+
+# ========================================
+# CONTEXT PROCESSOR
+# ========================================
 @app.context_processor
 def inject_now():
+    """Make datetime and current IST time available in all templates"""
     now_ist = datetime.now(IST)
     return {
         'datetime': datetime,
         'now_ist': now_ist
     }
+
+
+# ========================================
+# CACHED API CALL FUNCTION
+# ========================================
+@cache.cached(timeout=600, key_prefix='all_contests')
+def fetch_contests_from_api():
+    """
+    Fetch contests from CList API and cache for 10 minutes.
+    This function is called once every 10 minutes, regardless of number of users.
+    """
+    url = f"https://clist.by/api/v2/contest/?username={USERNAME}&api_key={API_KEY}&upcoming=true&limit=500&order_by=start"
+
+    try:
+        print("🔄 Fetching fresh data from CList API...")  # Debug log
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        contests = response.json().get("objects", [])
+        print(f"✅ Fetched {len(contests)} contests from API")  # Debug log
+        return contests
+    except requests.RequestException as e:
+        print(f"❌ Error fetching contests: {e}")
+        return []
+
+
 
 
 @app.route("/", methods=["GET"])
@@ -111,44 +178,58 @@ def contact():
             flash('Message must be at least 10 characters long.', 'error')
             return redirect(url_for('contact'))
 
-        # Save contact submission
+            # Save to database
         try:
-            save_contact_to_file(name, email, message)
-            flash('Thank you for contacting us! We\'ll get back to you soon.', 'success')
+                new_message = ContactMessage(
+                    name=name,
+                    email=email,
+                    message=message
+                )
+                db.session.add(new_message)
+                db.session.commit()
 
-            # Optional: Send email notification
-            # Uncomment the line below if you set up email
-            # send_email_notification(name, email, message)
+                flash('Thank you for contacting us! We\'ll get back to you soon.', 'success')
+                print(f"📧 New contact message from {name} ({email})")  # Debug log
 
         except Exception as e:
-            print(f"Error saving contact: {e}")
-            flash('There was an error processing your request. Please try again.', 'error')
+                db.session.rollback()
+                print(f"❌ Error saving contact message: {e}")
+                flash('There was an error processing your request. Please try again.', 'error')
 
         return redirect(url_for('contact'))
 
     # GET request - show the contact form
     return render_template('contact.html')
 
+# ========================================
+# DATABASE INITIALIZATION
+# ========================================
+@app.cli.command('init-db')
+def init_db():
+    """Initialize the database."""
+    db.create_all()
+    print("✅ Database tables created successfully!")
 
-def save_contact_to_file(name, email, message):
-    """
-    Save contact form submission to a text file.
-    This is a simple method good for small-scale deployments.
-    For production, consider using a database.
-    """
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    try:
-        with open('contact_submissions.txt', 'a', encoding='utf-8') as f:
-            f.write(f"\n{'=' * 60}\n")
-            f.write(f"Timestamp: {timestamp}\n")
-            f.write(f"Name: {name}\n")
-            f.write(f"Email: {email}\n")
-            f.write(f"Message:\n{message}\n")
-            f.write(f"{'=' * 60}\n")
-    except Exception as e:
-        print(f"Error writing to file: {e}")
-        raise
+@app.cli.command('drop-db')
+def drop_db():
+    """Drop all database tables."""
+    db.drop_all()
+    print("🗑️ Database tables dropped!")
+
+
+# ========================================
+# OPTIONAL: View messages (for testing)
+# ========================================
+@app.route('/admin/messages')
+def view_messages():
+    """
+    Simple admin view to see contact messages.
+    TODO: Add authentication before deploying to production!
+    """
+    messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
+    return render_template('admin_messages.html', messages=messages)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
