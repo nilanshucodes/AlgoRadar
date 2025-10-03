@@ -87,7 +87,7 @@ def fetch_contests_from_api():
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         contests = response.json().get("objects", [])
-        print(f"✅ Fetched {len(contests)} contests from API")  # Debug log
+        print(f"✅ Fetched {len(contests)} contests from API")
         return contests
     except requests.RequestException as e:
         print(f"❌ Error fetching contests: {e}")
