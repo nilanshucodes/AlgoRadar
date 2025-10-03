@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Admin - Contact Messages{% endblock %}
+{% block content %}
+
+<div class="container my-4">
+    <h2 class="text-center" style="color: #dc3545; margin-bottom: 10px;">⚠️ ADMIN PANEL - ADD AUTH BEFORE PRODUCTION!</h2>
+    <h2 class="mb-3 text-center">Contact Messages ({{ messages|length }})</h2>
+    
+    {% if messages %}
+    <div style="overflow-x: auto;">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for msg in messages %}
+                <tr>
+                    <td>{{ msg.id }}</td>
+                    <td>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ msg.name }}</td>
+                    <td><a href="mailto:{{ msg.email }}">{{ msg.email }}</a></td>
+                    <td style="max-width: 400px; word-wrap: break-word;">{{ msg.message }}</td>
+                    <td>
+                        {% if msg.read %}
+                            <span style="color: green;">✓ Read</span>
+                        {% else %}
+                            <span style="color: orange;">● Unread</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="text-align: center; color: #666; padding: 40px;">No messages yet.</p>
+    {% endif %}
+    
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+    </div>
+</div>
+
+{% endblock %}
