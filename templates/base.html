@@ -4,17 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AlgoRadar{% endblock %}</title>
-    <meta name="description" content="Track upcoming coding contests from Codeforces, CodeChef, AtCoder, and LeetCode">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
         <div class="header-container">
-            <h1 class="logo">AlgoRadar</h1>
+            <a href="{{ url_for('index') }}" class="logo">AlgoRadar</a>
             <nav>
                 <ul>
                     <li><a href="{{ url_for('index') }}">Home</a></li>
                     <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    {% if session.get('admin_logged_in') %}
+                    <li><a href="{{ url_for('view_messages') }}">Admin Panel</a></li>
+
+                    {% endif %}
                     <li><button id="themeToggle">🌙</button></li>
                 </ul>
             </nav>
@@ -22,14 +25,44 @@
     </header>
 
     <main>
+         <div class="flash-messages-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} flash-message" role="alert">
+                            <span class="alert-icon">
+                                {% if category == 'success' %}✓{% elif category == 'error' %}✕{% else %}ℹ{% endif %}
+                            </span>
+                            <span class="alert-text">{{ message }}</span>
+                            <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
         {% block content %}{% endblock %}
     </main>
 
     <footer>
-        <p>&copy; {{ datetime.utcnow().year }} AlgoRadar | Built with Flask | <a href="https://github.com/nilanshucodes" target="_blank">Github</a></p>
-    </footer>
+    <p>&copy; 2025 AlgoRadar. Built with ❤️ for competitive programmers.</p>
+    <p>
+        <a href="{{ url_for('contact') }}">Contact Us</a>
+    </p>
+</footer>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateX(100%)';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 300);
+                }, 5000);
+            });
+        });
         const themeToggle = document.getElementById('themeToggle');
         const currentTheme = localStorage.getItem('theme') || 'light';
 

@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, session
+from functools import wraps
 import requests
 from datetime import datetime, timedelta
 import pytz
@@ -8,36 +9,35 @@ from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
 
-load_dotenv()  # Load from .env
+load_dotenv()
 
 app = Flask(__name__)
-load_dotenv(dotenv_path="/Users/nilanshu/Desktop/contest_tracker_fallback/.env", override=True)# override=True ensures old env vars are replaced
 app.secret_key = os.getenv("SECRET_KEY")
-# Your CList API key
-API_KEY =os.getenv("CLIST_API_KEY")
+
+# API Configuration
+API_KEY = os.getenv("CLIST_API_KEY")
 USERNAME = os.getenv("CLIST_USERNAME")
 
-# Database Configuration
-# For local development with PostgreSQL:
-# DATABASE_URL=postgresql://username:password@localhost:5432/algoradar
-# For production, your hosting platform will provide this
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///fallback.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Admin Configuration
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME" )
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
-# Handle PostgreSQL URL format (some platforms use postgres:// instead of postgresql://)
-if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
-    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://', 1)
+#DataBase Configuration
+DATABASE_URL = os.getenv('DATABASE_URL')
 
-# Initialize Database
+if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///fallback.db'
+
 db = SQLAlchemy(app)
 
 # Cache Configuration
 cache = Cache(app, config={
-    'CACHE_TYPE': 'SimpleCache',  # Use SimpleCache for now, upgrade to Redis later
-    'CACHE_DEFAULT_TIMEOUT': 600  # 10 minutes (600 seconds)
+    'CACHE_TYPE': 'SimpleCache',
+    'CACHE_DEFAULT_TIMEOUT': 600
 })
 
-# Timezone conversion: UTC → IST
 IST = pytz.timezone('Asia/Kolkata')
 
 
@@ -59,11 +59,23 @@ class ContactMessage(db.Model):
 
 
 # ========================================
+# ADMIN AUTHENTICATION DECORATOR
+# ========================================
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('admin_logged_in'):
+            flash('Please log in to access the admin panel.', 'error')
+            return redirect(url_for('admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+# ========================================
 # CONTEXT PROCESSOR
 # ========================================
 @app.context_processor
 def inject_now():
-    """Make datetime and current IST time available in all templates"""
     now_ist = datetime.now(IST)
     return {
         'datetime': datetime,
@@ -76,10 +88,6 @@ def inject_now():
 # ========================================
 @cache.cached(timeout=600, key_prefix='all_contests')
 def fetch_contests_from_api():
-    """
-    Fetch contests from CList API and cache for 10 minutes.
-    This function is called once every 10 minutes, regardless of number of users.
-    """
     url = f"https://clist.by/api/v2/contest/?username={USERNAME}&api_key={API_KEY}&upcoming=true&limit=500&order_by=start"
 
     try:
@@ -94,8 +102,9 @@ def fetch_contests_from_api():
         return []
 
 
-
-
+# ========================================
+# MAIN ROUTES
+# ========================================
 @app.route("/", methods=["GET"])
 def index():
     platform_filter = request.args.getlist("platform")
@@ -128,13 +137,11 @@ def index():
                     start_ist.date() > (now + timedelta(days=30)).date() or start_ist.date() < now.date()):
                 continue
 
-        # Add formatted date & time
         c['start_date'] = start_ist.strftime("%d-%m-%Y")
         c['start_time'] = start_ist.strftime("%H:%M")
         c['end_ist'] = end_ist.strftime("%H:%M")
         filtered.append(c)
 
-    # Sort by start date-time
     filtered.sort(key=lambda x: datetime.strptime(x['start_date'] + ' ' + x['start_time'], "%d-%m-%Y %H:%M"))
 
     # Limit to next 20 contests per platform
@@ -148,13 +155,9 @@ def index():
     return render_template("index.html", contests=limited, platforms=platform_filter, time_filter=time_filter)
 
 
-# ========================================
-# CONTACT PAGE ROUTE
-# ========================================
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
     if request.method == 'POST':
-        # Get form data
         name = request.form.get('name', '').strip()
         email = request.form.get('email', '').strip()
         message = request.form.get('message', '').strip()
@@ -176,7 +179,6 @@ def contact():
             flash('Message must be at least 10 characters long.', 'error')
             return redirect(url_for('contact'))
 
-            # Save to database
         try:
             new_message = ContactMessage(
                 name=name,
@@ -196,37 +198,75 @@ def contact():
 
         return redirect(url_for('contact'))
 
-    # GET request - show the contact form
     return render_template('contact.html')
 
+
 # ========================================
-# DATABASE INITIALIZATION
+# ADMIN ROUTES
+# ========================================
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
+
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['admin_logged_in'] = True
+            flash('Successfully logged in!', 'success')
+            return redirect(url_for('view_messages'))
+        else:
+            flash('Invalid credentials. Please try again.', 'error')
+
+    return render_template('admin_login.html')
+
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_logged_in', None)
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('index'))
+
+
+@app.route('/admin/messages')
+@admin_required
+def view_messages():
+    messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
+    return render_template('admin_messages.html', messages=messages)
+
+
+@app.route('/admin/messages/<int:message_id>/mark-read', methods=['POST'])
+@admin_required
+def mark_message_read(message_id):
+    message = ContactMessage.query.get_or_404(message_id)
+    message.read = True
+    db.session.commit()
+    flash('Message marked as read.', 'success')
+    return redirect(url_for('view_messages'))
+
+
+@app.route('/admin/messages/<int:message_id>/delete', methods=['POST'])
+@admin_required
+def delete_message(message_id):
+    message = ContactMessage.query.get_or_404(message_id)
+    db.session.delete(message)
+    db.session.commit()
+    flash('Message deleted successfully.', 'success')
+    return redirect(url_for('view_messages'))
+
+
+# ========================================
+# DATABASE CLI COMMANDS
 # ========================================
 @app.cli.command('init-db')
 def init_db():
-    """Initialize the database."""
     db.create_all()
     print("✅ Database tables created successfully!")
 
 
 @app.cli.command('drop-db')
 def drop_db():
-    """Drop all database tables."""
     db.drop_all()
     print("🗑️ Database tables dropped!")
-
-
-# ========================================
-# OPTIONAL: View messages (for testing)
-# ========================================
-@app.route('/admin/messages')
-def view_messages():
-    """
-    Simple admin view to see contact messages.
-    TODO: Add authentication before deploying to production!
-    """
-    messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
-    return render_template('admin_messages.html', messages=messages)
 
 
 if __name__ == "__main__":
