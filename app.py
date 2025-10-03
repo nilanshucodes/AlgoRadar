@@ -98,8 +98,8 @@ def fetch_contests_from_api():
 
 @app.route("/", methods=["GET"])
 def index():
-    platform_filter = request.args.getlist("platform")  # e.g., ['codeforces.com', 'atcoder.jp']
-    time_filter = request.args.get("time")  # 'today', 'week', 'month', or None
+    platform_filter = request.args.getlist("platform")
+    time_filter = request.args.get("time")
 
     # Fetch upcoming contests from CList
     url = f"https://clist.by/api/v2/contest/?username={USERNAME}&api_key={API_KEY}&upcoming=true&limit=500&order_by=start"
