@@ -58,6 +58,32 @@ class ContactMessage(db.Model):
         return f'<ContactMessage {self.name} - {self.email}>'
 
 
+
+# ========================================
+# VIEW COUNTER FUNCTION
+# ========================================
+def get_total_visits():
+    """Get total site visits from database"""
+    try:
+        return SiteVisit.query.count()
+    except:
+        return 0
+
+def record_visit(page='home'):
+    """Record a new site visit"""
+    try:
+        visit = SiteVisit(page=page)
+        db.session.add(visit)
+        db.session.commit()
+    except Exception as e:
+        print(f"⚠️ Visit tracking error: {e}")
+        db.session.rollback()
+
+
+def get_today_visits():
+    today_start = datetime.now(IST).replace(hour=0, minute=0, second=0, microsecond=0)
+    return SiteVisit.query.filter(SiteVisit.timestamp >= today_start).count()
+
 # ========================================
 # ADMIN AUTHENTICATION DECORATOR
 # ========================================
@@ -77,11 +103,12 @@ def admin_required(f):
 @app.context_processor
 def inject_now():
     now_ist = datetime.now(IST)
+    total_visits = get_total_visits()
     return {
         'datetime': datetime,
-        'now_ist': now_ist
+        'now_ist': now_ist,
+        'total_visits': total_visits
     }
-
 
 # ========================================
 # CACHED API CALL FUNCTION
@@ -107,6 +134,8 @@ def fetch_contests_from_api():
 # ========================================
 @app.route("/", methods=["GET"])
 def index():
+    record_visit('home') # Record visit (only count once per page load)
+
     platform_filter = request.args.getlist("platform")
     time_filter = request.args.get("time")
 
@@ -231,7 +260,10 @@ def admin_logout():
 @admin_required
 def view_messages():
     messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
-    return render_template('admin_messages.html', messages=messages)
+    total_visits = get_total_visits()
+    today_visits = get_today_visits()
+    return render_template('admin_messages.html', messages=messages,total_visits=total_visits,
+                         today_visits=today_visits)
 
 
 @app.route('/admin/messages/<int:message_id>/mark-read', methods=['POST'])
@@ -267,7 +299,15 @@ def init_db():
 def drop_db():
     db.drop_all()
     print("🗑️ Database tables dropped!")
-
+# ========================================
+# AUTO-INITIALIZE DATABASE TABLES
+# ========================================
+with app.app_context():
+    try:
+        db.create_all()
+        print("✅ Database tables ready!")
+    except Exception as e:
+        print(f"⚠️ Database initialization: {e}")
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
