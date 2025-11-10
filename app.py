@@ -58,6 +58,16 @@ class ContactMessage(db.Model):
         return f'<ContactMessage {self.name} - {self.email}>'
 
 
+class SiteVisit(db.Model):
+    __tablename__ = 'site_visits'
+
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(IST))
+    page = db.Column(db.String(50), nullable=False, default='home')
+
+    def __repr__(self):
+        return f'<SiteVisit {self.id} - {self.page}>'
+
 
 # ========================================
 # VIEW COUNTER FUNCTION
