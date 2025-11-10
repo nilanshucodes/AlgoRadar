@@ -3,11 +3,16 @@
 {% block content %}
 
 <div class="container my-4">
-    <div class="admin-header">
-        <h2>📬 Contact Messages ({{ messages|length }})</h2>
+    <div class="admin-header-wrapper">
+        <div class="admin-title-section">
+            <h2>📬 Contact Messages ({{ messages|length }})</h2>
+            <div class="admin-stats">
+                <span class="stat-badge">📊 {{ "{:,}".format(total_visits) }} total</span>
+                <span class="stat-badge">📅 {{ today_visits }} today</span>
+            </div>
+        </div>
         <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger btn-logout">Logout</a>
     </div>
-
     {% if messages %}
     <div style="overflow-x: auto;">
         <table class="table table-bordered table-hover">
