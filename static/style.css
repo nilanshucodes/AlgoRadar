@@ -804,39 +804,95 @@ body.dark .social-icon:hover {
    ======================================== */
 
 /* Admin Header */
-.admin-header {
+/* Admin Header Styles */
+.admin-header-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    padding-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
     border-bottom: 3px solid #007bff;
 }
 
-.admin-header h2 {
+.admin-title-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-title-section h2 {
     margin: 0;
-    font-size: 28px;
     color: #007bff;
+    font-size: 24px;
+}
+
+.admin-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+    border: 1px solid #e0e0e0;
 }
 
 .btn-logout {
     padding: 8px 20px;
-    font-size: 14px;
-    font-weight: 600;
     border: 2px solid #dc3545;
-    background-color: transparent;
     color: #dc3545;
+    background: transparent;
     border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s;
     text-decoration: none;
-    transition: all 0.3s ease;
     display: inline-block;
 }
 
 .btn-logout:hover {
-    background-color: #dc3545;
+    background: #dc3545;
     color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+/* Dark mode adjustments */
+body.dark .admin-title-section h2 {
+    color: #4da3ff;
+}
+
+body.dark .stat-badge {
+    background: #1a1a1a;
+    color: #aaa;
+    border-color: #444;
+}
+
+body.dark .btn-logout {
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+}
+
+body.dark .btn-logout:hover {
+    background: #ff6b6b;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-header-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-logout {
+        width: 100%;
+        text-align: center;
+    }
 }
 
 /* Admin Messages Table - Base Styles */
@@ -1292,4 +1348,26 @@ body.dark .table-bordered tbody tr.table-light td {
 
 button, .btn, a {
     transition: all 0.3s ease;
+}
+
+/* Visit Counter Styles */
+.visit-counter {
+    margin-left: 15px;
+    font-size: 13px;
+    color: #666;
+    font-weight: 400;
+}
+
+body.dark .visit-counter {
+    color: #999;
+}
+
+/* Optional: Fade in animation */
+.visit-counter {
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+footer:hover .visit-counter {
+    opacity: 1;
 }
