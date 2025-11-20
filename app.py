@@ -29,6 +29,9 @@ if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///fallback.db'
+app.config['SQLALCHEMY_POOL_SIZE'] = 5
+app.config['SQLALCHEMY_POOL_RECYCLE'] = 280
+app.config['SQLALCHEMY_POOL_PRE_PING'] = True
 
 db = SQLAlchemy(app)
 
@@ -270,4 +273,13 @@ def drop_db():
 
 
 if __name__ == "__main__":
+    with app.app_context():
+        try:
+            db.create_all()
+            # Test connection to ensure database is ready
+            db.session.execute(db.text('SELECT 1'))
+            db.session.commit()
+            print("✅ Database connection ready!")
+        except Exception as e:
+            print(f"⚠️ Database initialization warning: {e}")
     app.run()
