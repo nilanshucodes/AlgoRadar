@@ -269,5 +269,4 @@ def drop_db():
     print("🗑️ Database tables dropped!")
 
 
-if __name__ == "__main__":
-    app.run()
+
