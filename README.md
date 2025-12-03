@@ -139,7 +139,7 @@ Visit `http://localhost:5000`
 flask init-db
 ```
 
-**Detailed deployment guide**: See [DEPLOYMENT.md](DEPLOYMENT.md)
+**Detailed deployment guide(WIP)**: See [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## Project Structure
 
@@ -211,7 +211,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - GitHub: [@nilanshucodes](https://github.com/nilanshucodes)
 
 
-**Live Demo**: [https://algoradar.onrender.com](https://algoradar.onrender.com)
+**Live Demo**: [https://algo-radar.vercel.app](https://algo-radar.vercel.app)
 
 ---
 
