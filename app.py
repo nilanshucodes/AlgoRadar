@@ -480,16 +480,22 @@ def index():
             start_ist = start_utc.astimezone(IST)
             end_ist = end_utc.astimezone(IST)
 
-        if time_filter:
-            now = datetime.now(IST)
-            if time_filter == 'today' and start_ist.date() != now.date():
-                continue
-            elif time_filter == 'week' and (
-                    start_ist.date() > (now + timedelta(days=7)).date() or start_ist.date() < now.date()):
-                continue
-            elif time_filter == 'month' and (
-                    start_ist.date() > (now + timedelta(days=30)).date() or start_ist.date() < now.date()):
-                continue
+            # Time filter - FIXED LOGIC
+            if time_filter:
+                if time_filter == 'today':
+                    # Only show contests starting today (IST)
+                    if start_ist.date() != now_ist.date():
+                        continue
+                elif time_filter == 'week':
+                    # Show contests in next 7 days
+                    end_of_week = now_ist + timedelta(days=7)
+                    if start_ist > end_of_week:
+                        continue
+                elif time_filter == 'month':
+                    # Show contests in next 30 days
+                    end_of_month = now_ist + timedelta(days=30)
+                    if start_ist > end_of_month:
+                        continue
 
         c['start_date'] = start_ist.strftime("%d-%m-%Y")
         c['start_time'] = start_ist.strftime("%H:%M")
