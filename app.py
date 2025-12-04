@@ -7,7 +7,10 @@ from collections import defaultdict
 import os
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
-from flask_caching import Cache
+from datetime import timezone
+import time
+import threading
+from sqlalchemy import text
 
 load_dotenv()
 
