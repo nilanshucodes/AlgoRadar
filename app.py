@@ -459,10 +459,26 @@ def index():
         if platform_filter and resource not in [p.lower() for p in platform_filter]:
             continue
 
-        # Time filter
-        start_utc = datetime.fromisoformat(c['start'])
-        start_ist = start_utc.astimezone(IST)
-        end_ist = datetime.fromisoformat(c['end']).astimezone(IST)
+            # Parse datetime strings properly with timezone
+            start_str = c['start'].replace('Z', '+00:00')
+            start_utc = datetime.fromisoformat(start_str)
+
+            # Ensure timezone-aware
+            if start_utc.tzinfo is None:
+                start_utc = UTC.localize(start_utc)
+
+            # Skip past contests
+            if start_utc < now_utc:
+                continue
+
+            # Parse end time
+            end_str = c['end'].replace('Z', '+00:00')
+            end_utc = datetime.fromisoformat(end_str)
+            if end_utc.tzinfo is None:
+                end_utc = UTC.localize(end_utc)
+
+            start_ist = start_utc.astimezone(IST)
+            end_ist = end_utc.astimezone(IST)
 
         if time_filter:
             now = datetime.now(IST)
