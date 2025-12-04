@@ -653,11 +653,7 @@ def contact():
             return redirect(url_for('contact'))
 
         try:
-            new_message = ContactMessage(
-                name=name,
-                email=email,
-                message=message
-            )
+            new_message = ContactMessage(name=name, email=email, message=message)
             db.session.add(new_message)
             db.session.commit()
 
