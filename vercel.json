@@ -12,5 +12,11 @@
             "src":"/(.*)",
             "dest":"/"
         }
+    ],
+    "crons": [
+        {
+        "path": "/api/cron/refresh-contests",
+        "schedule": "*/10 * * * *"
+      }
     ]
 }
