@@ -191,6 +191,7 @@ def fetch_and_update_contests():
 
     try:
         print("🔄 Fetching fresh data from CList API...")
+        start_time = time.time()
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         contests_data = response.json().get("objects", [])
@@ -232,10 +233,15 @@ def fetch_and_update_contests():
             if end_dt.tzinfo is None:
                 end_dt = UTC.localize(end_dt)
 
+            # Extract resource host - CList API returns resource as an object with 'host' key
+            resource = c.get('resource', '')
+            if isinstance(resource, dict):
+                resource = resource.get('host', '')
+            
             contest_data = {
                 'contest_id': contest_id,
                 'event': c.get('event', ''),
-                'resource': c.get('resource', ''),
+                'resource': resource,
                 'href': c.get('href', ''),
                 'start': start_dt,
                 'end': end_dt,
@@ -433,8 +439,15 @@ def get_contests_from_memory_cache(platform_filter=None, time_filter=None):
 
     for c in _cache['contests']:
         try:
-            # Platform filter
-            resource = c['resource'].lower() if isinstance(c['resource'], str) else str(c['resource']).lower()
+            # Platform filter - handle resource as object or string
+            raw_resource = c.get('resource', '')
+            if isinstance(raw_resource, dict):
+                resource = raw_resource.get('host', '').lower()
+            elif isinstance(raw_resource, str):
+                resource = raw_resource.lower()
+            else:
+                resource = str(raw_resource).lower()
+            
             if platform_filter and resource not in [p.lower() for p in platform_filter]:
                 continue
 
@@ -476,9 +489,12 @@ def get_contests_from_memory_cache(platform_filter=None, time_filter=None):
                     if start_ist > end_of_month:
                         continue
 
+            # Get resource host for display - reuse the already extracted resource
+            display_resource = raw_resource.get('host', '') if isinstance(raw_resource, dict) else (raw_resource if isinstance(raw_resource, str) else str(raw_resource))
+            
             filtered.append({
                 'event': c['event'],
-                'resource': c['resource'],
+                'resource': display_resource,
                 'href': c['href'],
                 'start_date': start_ist.strftime("%d-%m-%Y"),
                 'start_time': start_ist.strftime("%H:%M"),
