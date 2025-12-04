@@ -592,6 +592,18 @@ def delete_message(message_id):
     return redirect(url_for('view_messages'))
 
 
+@app.route('/admin/refresh-contests', methods=['POST'])
+@admin_required
+def manual_refresh_contests():
+    """Manual trigger to refresh contests"""
+    success = fetch_and_update_contests()
+    if success:
+        flash('Contests refreshed successfully!', 'success')
+    else:
+        flash('Error refreshing contests. Check logs.', 'error')
+    return redirect(url_for('admin_dashboard'))
+
+
 # ========================================
 # API ENDPOINT FOR CRON JOBS
 # ========================================
