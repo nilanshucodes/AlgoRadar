@@ -302,6 +302,141 @@ def fetch_and_update_contests():
 
     except Exception as e:
         print(f"❌ Error fetching contests: {e}")
+        db.session.rollback()
+        return False
+    finally:
+        _cache['fetch_in_progress'] = False
+
+
+def safe_db_query(query_func, *args, **kwargs):
+    """
+    Execute database query with automatic reconnection on failure.
+    Only pings database when actually needed.
+    """
+    max_retries = 2
+
+    for attempt in range(max_retries):
+        try:
+            return query_func(*args, **kwargs)
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"⚠️ Database query failed (attempt {attempt + 1}), reconnecting...")
+                try:
+                    db.session.rollback()
+                    db.session.remove()
+                    # Quick ping to re-establish connection
+                    db.session.execute(db.text('SELECT 1'))
+                except:
+                    pass
+            else:
+                print(f"❌ Database query failed after {max_retries} attempts: {e}")
+                raise
+
+def should_refresh_contests():
+    """
+    Check if contests need to be refreshed.
+    More lenient to avoid re-fetching on DB reconnects.
+    """
+    try:
+        # Check in-memory cache first (instant)
+        if _cache['last_fetch']:
+            time_since = (datetime.now(UTC) - _cache['last_fetch']).total_seconds() / 60
+            if time_since < 10:
+                print(f" In-memory cache fresh ({time_since:.1f} min old)")
+                return False
+
+        # Then check database (might be slow after reconnect)
+        last_update = CacheMetadata.get_last_update()
+
+        if not last_update:
+            # Check if database actually has contests
+            contest_count = Contest.query.count()
+            if contest_count > 0:
+                print(f"ℹ Database has {contest_count} contests but no metadata, assuming fresh")
+                # Set metadata for next time
+                CacheMetadata.set_last_update()
+                return False
+            else:
+                print(" Database empty, need to fetch")
+                return True
+
+        now_utc = datetime.now(UTC)
+        time_since_update = now_utc - last_update
+        minutes_ago = time_since_update.total_seconds() / 60
+
+        print(f" Last DB update was {minutes_ago:.1f} minutes ago")
+        return time_since_update > timedelta(minutes=10)
+
+    except Exception as e:
+        print(f" Error checking cache: {e}")
+        # If database fails, check in-memory cache
+        if _cache['last_fetch']:
+            time_since = (datetime.now(UTC) - _cache['last_fetch']).total_seconds() / 60
+            if time_since < 15:  # More lenient
+                print(f" Using in-memory fallback ({time_since:.1f} min old)")
+                return False
+        return True
+
+
+def get_contests_from_db(platform_filter=None, time_filter=None):
+    """Fetch contests from database with filters - with automatic reconnection"""
+
+    def _query():
+        now_utc = datetime.now(UTC)
+        query = Contest.query.filter(Contest.start >= now_utc)
+
+        if platform_filter:
+            query = query.filter(Contest.resource.in_(platform_filter))
+
+        if time_filter:
+            now_ist = now_utc.astimezone(IST)
+
+            if time_filter == 'today':
+                start_of_today = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)
+                end_of_today = now_ist.replace(hour=23, minute=59, second=59, microsecond=999999)
+                start_utc = start_of_today.astimezone(UTC)
+                end_utc = end_of_today.astimezone(UTC)
+                query = query.filter(Contest.start >= start_utc, Contest.start <= end_utc)
+
+            elif time_filter == 'week':
+                end_of_week = now_ist + timedelta(days=7)
+                end_of_week_utc = end_of_week.astimezone(UTC)
+                query = query.filter(Contest.start <= end_of_week_utc)
+
+            elif time_filter == 'month':
+                end_of_month = now_ist + timedelta(days=30)
+                end_of_month_utc = end_of_month.astimezone(UTC)
+                query = query.filter(Contest.start <= end_of_month_utc)
+
+        query = query.order_by(Contest.start.asc())
+        all_contests = query.all()
+
+        if not all_contests:
+            print(f"ℹ️ No contests found with filters: platform={platform_filter}, time={time_filter}")
+        else:
+            print(f"✅ Found {len(all_contests)} contests from database")
+
+        limited = []
+        count_per_platform = defaultdict(int)
+
+        for contest in all_contests:
+            if count_per_platform[contest.resource] < 20:
+                limited.append(contest.to_dict())
+                count_per_platform[contest.resource] += 1
+
+        return limited
+
+    try:
+        return safe_db_query(_query)
+    except Exception as e:
+        print(f"❌ Database query completely failed: {e}")
+        return get_contests_from_memory_cache(platform_filter, time_filter)
+
+def get_contests_from_memory_cache(platform_filter=None, time_filter=None):
+    """Fallback: Get contests from in-memory cache"""
+    print(" Using in-memory cache fallback")
+
+    if not _cache['contests']:
         return []
 
 
