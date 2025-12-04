@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard - AlgoRadar{% endblock %}
+{% block content %}
+
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <h2>Admin Dashboard</h2>
+        <div class="dashboard-actions">
+            <a href="{{ url_for('view_messages') }}" class="btn btn-secondary">📧 Messages</a>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-outline">🚪 Logout</a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-content">
+                <h3>{{ total_contests }}</h3>
+                <p>Total Contests in Database</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+                <h3>{{ upcoming_contests }}</h3>
+                <p>Upcoming Contests</p>
+            </div>
+        </div>
+
+        <div class="stat-card {% if unread_messages > 0 %}stat-card-alert{% endif %}">
+            <div class="stat-icon">✉️</div>
+            <div class="stat-content">
+                <h3>{{ unread_messages }}</h3>
+                <p>Unread Messages</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🔄</div>
+            <div class="stat-content">
+                <h3>{{ last_update.strftime('%H:%M') if last_update else 'Never' }}</h3>
+                <p>Last Update: {{ last_update.strftime('%d %b %Y') if last_update else 'N/A' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="system-status-section">
+        <h3>System Status</h3>
+        <div class="status-box">
+            <div class="status-item">
+                <span class="status-label">Database Connection:</span>
+                <span class="status-badge status-success">✓ Connected</span>
+            </div>
+            
+            <div class="status-item">
+                <span class="status-label">Last Data Sync:</span>
+                <span class="status-badge {% if last_update and (now_ist - last_update.astimezone(now_ist.tzinfo)).total_seconds() < 900 %}status-success{% else %}status-warning{% endif %}">
+                    {% if last_update %}
+                        {{ last_update.strftime('%Y-%m-%d %H:%M:%S IST') }}
+                    {% else %}
+                        Never synced
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="status-item">
+                <span class="status-label">Data Freshness:</span>
+                {% if last_update %}
+                    {% set time_diff = (now_ist - last_update).total_seconds() / 60 %}
+                    <span class="status-badge {% if time_diff < 15 %}status-success{% elif time_diff < 30 %}status-warning{% else %}status-error{% endif %}">
+                        {{ "%.0f"|format(time_diff) }} minutes ago
+                    </span>
+                {% else %}
+                    <span class="status-badge status-error">No data</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+        <h3>Quick Actions</h3>
+        <div class="actions-grid">
+            <form action="{{ url_for('manual_refresh_contests') }}" method="POST" class="action-form">
+                <button type="submit" class="action-btn action-btn-primary">
+                    <span class="action-icon">🔄</span>
+                    <div class="action-content">
+                        <strong>Refresh Contests</strong>
+                        <small>Fetch latest data from CList API</small>
+                    </div>
+                </button>
+            </form>
+
+            <a href="{{ url_for('view_messages') }}" class="action-btn">
+                <span class="action-icon">📧</span>
+                <div class="action-content">
+                    <strong>View Messages</strong>
+                    <small>Check contact form submissions</small>
+                </div>
+            </a>
+
+            <a href="{{ url_for('index') }}" class="action-btn">
+                <span class="action-icon">🏠</span>
+                <div class="action-content">
+                    <strong>View Website</strong>
+                    <small>See public-facing site</small>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Activity Info -->
+    <div class="info-section">
+        <h3>ℹ️ Important Information</h3>
+        <div class="info-box">
+            <p><strong>Auto-refresh:</strong> Contest data is automatically refreshed every 10 minutes via cron job.</p>
+            <p><strong>Manual refresh:</strong> Use the button above to force an immediate update if needed.</p>
+            <p><strong>API Limit:</strong> CList API allows 10 requests per minute. Automated cron handles this efficiently.</p>
+            <p><strong>Database:</strong> All contest data is cached in PostgreSQL for fast, scalable access.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-dashboard {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.dashboard-header h2 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-secondary {
+    background: #6366f1;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4f46e5;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-outline:hover {
+    background: var(--hover-bg);
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.stat-card-alert {
+    border: 2px solid #f59e0b;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { border-color: #f59e0b; }
+    50% { border-color: #fbbf24; }
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.stat-content p {
+    margin: 0.25rem 0 0 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* System Status */
+.system-status-section,
+.quick-actions-section,
+.info-section {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.system-status-section h3,
+.quick-actions-section h3,
+.info-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.status-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--bg);
+    border-radius: 6px;
+}
+
+.status-label {
+    font-weight: 500;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-success {
+    background: #10b981;
+    color: white;
+}
+
+.status-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.status-error {
+    background: #ef4444;
+    color: white;
+}
+
+/* Actions Grid */
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.action-form {
+    margin: 0;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.action-btn:hover {
+    background: var(--hover-bg);
+    border-color: #6366f1;
+    transform: translateY(-2px);
+}
+
+.action-btn-primary {
+    background: #6366f1;
+    color: white;
+    border-color: #6366f1;
+}
+
+.action-btn-primary:hover {
+    background: #4f46e5;
+    border-color: #4f46e5;
+}
+
+.action-icon {
+    font-size: 1.5rem;
+}
+
+.action-content {
+    text-align: left;
+}
+
+.action-content strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.action-content small {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* Info Box */
+.info-box {
+    background: var(--bg);
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 4px solid #6366f1;
+}
+
+.info-box p {
+    margin: 0.5rem 0;
+}
+
+.info-box p:first-child {
+    margin-top: 0;
+}
+
+.info-box p:last-child {
+    margin-bottom: 0;
+}
+
+/* Dark mode support */
+:root {
+    --bg: #f9fafb;
+    --card-bg: white;
+    --text: #1f2937;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --hover-bg: #f3f4f6;
+}
+
+body.dark {
+    --bg: #1f2937;
+    --card-bg: #374151;
+    --text: #f9fafb;
+    --text-secondary: #d1d5db;
+    --border: #4b5563;
+    --hover-bg: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .status-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+</style>
+
+{% endblock %}
