@@ -593,7 +593,97 @@ def delete_message(message_id):
 
 
 # ========================================
-# DATABASE CLI COMMANDS
+# API ENDPOINT FOR CRON JOBS
+# ========================================
+@app.route('/api/cron/refresh-contests', methods=['GET', 'POST'])
+def cron_refresh_contests():
+    """Endpoint for cron job to refresh contests"""
+    auth_header = request.headers.get('Authorization', '')
+    expected_token = os.getenv('CRON_SECRET_TOKEN', 'your-secret-token-here')
+
+    is_authorized = (
+            auth_header == f'Bearer {expected_token}' or
+            request.headers.get('X-Cron-Secret') == expected_token
+    )
+
+    if not is_authorized:
+        return {'error': 'Unauthorized'}, 401
+
+    success = fetch_and_update_contests()
+
+    if success:
+        total = Contest.query.count()
+        return {
+            'status': 'success',
+            'message': f'Contests updated successfully. Total: {total}',
+            'timestamp': datetime.now(IST).isoformat()
+        }, 200
+    else:
+        return {
+            'status': 'error',
+            'message': 'Failed to update contests',
+            'timestamp': datetime.now(IST).isoformat()
+        }, 500
+
+ 
+# ========================================
+# DATABASE LIFECYCLE MANAGEMENT
+# ========================================
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    """Clean up database sessions after each request"""
+    try:
+        db.session.remove()
+    except Exception as e:
+        print(f"️ Error during session cleanup: {e}")
+
+
+@app.before_request
+def before_request():
+    """Lazy database connection - only ping if we need to use it"""
+    # REMOVED: The eager ping that was causing 200 concurrent users to queue
+    # We'll handle reconnection only when actually querying the database
+    pass
+
+
+# ========================================
+# ERROR HANDLERS - Place at the end before CLI commands
+# ========================================
+@app.errorhandler(500)
+def internal_error(error):
+    """Handle 500 errors gracefully"""
+    try:
+        db.session.rollback()
+    except:
+        pass
+
+    print(f"❌ Internal error: {error}")
+
+    # Try to use cached data
+    if _cache.get('contests'):
+        try:
+            print("🔄 Using in-memory cache fallback")
+            contests = get_contests_from_memory_cache()
+            return render_template('index.html', contests=contests,
+                                   platforms=[], time_filter=None), 200
+        except Exception as e:
+            print(f"❌ Cache fallback failed: {e}")
+
+    return render_template('error.html',
+                       error_message="Temporary service issue. Please refresh in a moment."), 500
+
+
+
+
+@app.errorhandler(404)
+def not_found_error(error):
+    """Handle 404 errors"""
+    return render_template('error.html',
+                       error_message="Temporary service issue. Please refresh in a moment."), 404
+
+
+# ========================================
+# CLI COMMANDS
 # ========================================
 @app.cli.command('init-db')
 def init_db():
