@@ -508,7 +508,9 @@ def index():
                 'duration': c.get('duration', 0)
             })
 
-    filtered.sort(key=lambda x: datetime.strptime(x['start_date'] + ' ' + x['start_time'], "%d-%m-%Y %H:%M"))
+        except Exception as e:
+            print(f" Error processing contest {c.get('event', 'unknown')}: {e}")
+            continue
 
     # Limit to next 20 contests per platform
     limited = []
