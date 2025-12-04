@@ -205,10 +205,102 @@ def fetch_and_update_contests():
         print("🔄 Fetching fresh data from CList API...")
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        contests = response.json().get("objects", [])
-        print(f"✅ Fetched {len(contests)} contests from API")
-        return contests
-    except requests.RequestException as e:
+        contests_data = response.json().get("objects", [])
+
+        fetch_time = time.time() - start_time
+        print(f"✅ Fetched {len(contests_data)} contests in {fetch_time:.2f}s")
+
+        # Update in-memory cache immediately
+        _cache['contests'] = contests_data
+        _cache['last_fetch'] = datetime.now(UTC)
+
+        # BULK DATABASE UPDATE
+        db_start = time.time()
+
+        # Step 1: Clean up old contests
+        cutoff_date = datetime.now(UTC) - timedelta(days=30)
+        deleted = Contest.query.filter(Contest.start < cutoff_date).delete()
+        db.session.commit()
+
+        if deleted > 0:
+            print(f"🗑️ Deleted {deleted} old contests")
+
+        # Step 2: Fetch all existing contest IDs in ONE query
+        existing_ids = {c.contest_id for c in Contest.query.with_entities(Contest.contest_id).all()}
+
+        # Step 3: Separate new vs existing contests
+        new_contests = []
+        update_mappings = []
+
+        for c in contests_data:
+            contest_id = str(c.get('id', ''))
+
+            # Parse dates
+            start_dt = datetime.fromisoformat(c['start'].replace('Z', '+00:00'))
+            end_dt = datetime.fromisoformat(c['end'].replace('Z', '+00:00'))
+
+            if start_dt.tzinfo is None:
+                start_dt = UTC.localize(start_dt)
+            if end_dt.tzinfo is None:
+                end_dt = UTC.localize(end_dt)
+
+            contest_data = {
+                'contest_id': contest_id,
+                'event': c.get('event', ''),
+                'resource': c.get('resource', ''),
+                'href': c.get('href', ''),
+                'start': start_dt,
+                'end': end_dt,
+                'duration': c.get('duration', 0)
+            }
+
+            if contest_id in existing_ids:
+                # For update: need to include the ID for SQLAlchemy to know which row
+                update_mappings.append(contest_data)
+            else:
+                # For insert: create new Contest object
+                new_contests.append(Contest(**contest_data))
+
+        # Step 4: BULK INSERT new contests (all at once)
+        if new_contests:
+            db.session.bulk_save_objects(new_contests)
+            print(f"➕ Bulk inserted {len(new_contests)} new contests")
+
+        # Step 5: BULK UPDATE existing contests (all at once)
+        if update_mappings:
+            # For bulk update, we need to fetch existing objects first
+            # But we'll do it more efficiently
+            existing_contests = Contest.query.filter(
+                Contest.contest_id.in_([c['contest_id'] for c in update_mappings])
+            ).all()
+
+            # Create a mapping for quick lookup
+            contest_map = {c.contest_id: c for c in existing_contests}
+
+            # Update each object
+            for update_data in update_mappings:
+                cid = update_data['contest_id']
+                if cid in contest_map:
+                    contest = contest_map[cid]
+                    contest.event = update_data['event']
+                    contest.resource = update_data['resource']
+                    contest.href = update_data['href']
+                    contest.start = update_data['start']
+                    contest.end = update_data['end']
+                    contest.duration = update_data['duration']
+
+            print(f"🔄 Updated {len(update_mappings)} existing contests")
+
+        # Commit everything in ONE transaction
+        db.session.commit()
+        CacheMetadata.set_last_update()
+
+        db_time = time.time() - db_start
+        print(f"💾 DB updated in {db_time:.2f}s: {len(update_mappings)} updated, {len(new_contests)} new")
+
+        return True
+
+    except Exception as e:
         print(f"❌ Error fetching contests: {e}")
         return []
 
