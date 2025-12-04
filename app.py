@@ -606,5 +606,14 @@ def drop_db():
     db.drop_all()
     print("🗑️ Database tables dropped!")
 
+@app.cli.command('seed-contests')
+def seed_contests():
+    """Manually fetch and seed contests from CList API"""
+    print(" Seeding contests from CList API...")
+    success = fetch_and_update_contests()
+    if success:
+        print(" Contests seeded successfully!")
+    else:
+        print(" Failed to seed contests!")
 
 
