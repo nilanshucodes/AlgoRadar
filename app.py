@@ -452,8 +452,8 @@ def index():
     contests = fetch_contests_from_api()
 
     filtered = []
-    for c in contests:
-        resource = c['resource'].lower() if isinstance(c['resource'], str) else str(c['resource']).lower()
+    now_utc = datetime.now(UTC)
+    now_ist = now_utc.astimezone(IST)
 
         # Platform filter
         if platform_filter and resource not in [p.lower() for p in platform_filter]:
