@@ -497,10 +497,16 @@ def index():
                     if start_ist > end_of_month:
                         continue
 
-        c['start_date'] = start_ist.strftime("%d-%m-%Y")
-        c['start_time'] = start_ist.strftime("%H:%M")
-        c['end_ist'] = end_ist.strftime("%H:%M")
-        filtered.append(c)
+            filtered.append({
+                'event': c['event'],
+                'resource': c['resource'],
+                'href': c['href'],
+                'start_date': start_ist.strftime("%d-%m-%Y"),
+                'start_time': start_ist.strftime("%H:%M"),
+                'end_ist': end_ist.strftime("%H:%M"),
+                'start': start_utc,
+                'duration': c.get('duration', 0)
+            })
 
     filtered.sort(key=lambda x: datetime.strptime(x['start_date'] + ' ' + x['start_time'], "%d-%m-%Y %H:%M"))
 
