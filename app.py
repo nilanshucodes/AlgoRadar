@@ -35,6 +35,24 @@ if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///fallback.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# OPTIMIZED connection pool for high concurrency + lazy loading
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': False,  # CHANGED: Don't ping eagerly (we do it lazily now)
+    'pool_recycle': 280,  # Recycle before Supabase timeout (300s)
+    'pool_size': 5,  # INCREASED: More connections for concurrent users
+    'max_overflow': 10,  # INCREASED: Allow bursts of traffic
+    'pool_timeout': 20,  # INCREASED: Wait longer for connection
+    'connect_args': {
+        'connect_timeout': 10,  # Reasonable timeout
+        'keepalives': 1,
+        'keepalives_idle': 30,
+        'keepalives_interval': 10,
+        'keepalives_count': 3,
+        'options': '-c statement_timeout=10000'  # 10s query timeout
+    }
+}
 
 db = SQLAlchemy(app)
 
