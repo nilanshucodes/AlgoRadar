@@ -25,10 +25,10 @@ API_KEY = os.getenv("CLIST_API_KEY")
 USERNAME = os.getenv("CLIST_USERNAME")
 
 # Admin Configuration
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME" )
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
-#DataBase Configuration
+# Database Configuration
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
@@ -171,19 +171,7 @@ def admin_required(f):
 
 
 # ========================================
-# CONTEXT PROCESSOR
-# ========================================
-@app.context_processor
-def inject_now():
-    now_ist = datetime.now(IST)
-    return {
-        'datetime': datetime,
-        'now_ist': now_ist
-    }
-
-
-# ========================================
-# CACHED API CALL FUNCTION
+# CONTEST DATA MANAGEMENT
 # ========================================
 def fetch_and_update_contests():
     """
@@ -439,25 +427,16 @@ def get_contests_from_memory_cache(platform_filter=None, time_filter=None):
     if not _cache['contests']:
         return []
 
-
-# ========================================
-# MAIN ROUTES
-# ========================================
-@app.route("/", methods=["GET"])
-def index():
-    platform_filter = request.args.getlist("platform")
-    time_filter = request.args.get("time")
-
-    # Use cached API call
-    contests = fetch_contests_from_api()
-
     filtered = []
     now_utc = datetime.now(UTC)
     now_ist = now_utc.astimezone(IST)
 
-        # Platform filter
-        if platform_filter and resource not in [p.lower() for p in platform_filter]:
-            continue
+    for c in _cache['contests']:
+        try:
+            # Platform filter
+            resource = c['resource'].lower() if isinstance(c['resource'], str) else str(c['resource']).lower()
+            if platform_filter and resource not in [p.lower() for p in platform_filter]:
+                continue
 
             # Parse datetime strings properly with timezone
             start_str = c['start'].replace('Z', '+00:00')
@@ -512,7 +491,7 @@ def index():
             print(f" Error processing contest {c.get('event', 'unknown')}: {e}")
             continue
 
-    # Limit to next 20 contests per platform
+    # Limit to 20 per platform
     limited = []
     count_per_platform = defaultdict(int)
     for c in filtered:
@@ -630,12 +609,12 @@ def index():
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
+    """Contact form route"""
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         email = request.form.get('email', '').strip()
         message = request.form.get('message', '').strip()
 
-        # Validate input
         if not name or not email or not message:
             flash('All fields are required!', 'error')
             return redirect(url_for('contact'))
@@ -656,10 +635,8 @@ def contact():
             new_message = ContactMessage(name=name, email=email, message=message)
             db.session.add(new_message)
             db.session.commit()
-
             flash('Thank you for contacting us! We\'ll get back to you soon.', 'success')
             print(f"📧 New contact message from {name} ({email})")
-
         except Exception as e:
             db.session.rollback()
             print(f"❌ Error saving contact message: {e}")
@@ -756,7 +733,7 @@ def admin_login():
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             session['admin_logged_in'] = True
             flash('Successfully logged in!', 'success')
-            return redirect(url_for('view_messages'))
+            return redirect(url_for('admin_dashboard'))
         else:
             flash('Invalid credentials. Please try again.', 'error')
 
@@ -768,6 +745,29 @@ def admin_logout():
     session.pop('admin_logged_in', None)
     flash('You have been logged out.', 'success')
     return redirect(url_for('index'))
+
+
+@app.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    """Admin dashboard with system stats"""
+    try:
+        total_contests = Contest.query.count()
+        upcoming_contests = Contest.query.filter(Contest.start >= datetime.now(UTC)).count()
+        unread_messages = ContactMessage.query.filter_by(read=False).count()
+        last_update = CacheMetadata.get_last_update()
+    except Exception as e:
+        print(f"️ Dashboard query error: {e}")
+        total_contests = 0
+        upcoming_contests = 0
+        unread_messages = 0
+        last_update = None
+
+    return render_template('admin_dashboard.html',
+                           total_contests=total_contests,
+                           upcoming_contests=upcoming_contests,
+                           unread_messages=unread_messages,
+                           last_update=last_update)
 
 
 @app.route('/admin/messages')
@@ -842,7 +842,7 @@ def cron_refresh_contests():
             'timestamp': datetime.now(IST).isoformat()
         }, 500
 
- 
+
 # ========================================
 # DATABASE LIFECYCLE MANAGEMENT
 # ========================================
@@ -904,14 +904,17 @@ def not_found_error(error):
 # ========================================
 @app.cli.command('init-db')
 def init_db():
+    """Initialize database tables"""
     db.create_all()
-    print("✅ Database tables created successfully!")
+    print(" Database tables created successfully!")
 
 
 @app.cli.command('drop-db')
 def drop_db():
+    """Drop all database tables"""
     db.drop_all()
-    print("🗑️ Database tables dropped!")
+    print("️ Database tables dropped!")
+
 
 @app.cli.command('seed-contests')
 def seed_contests():
