@@ -490,7 +490,112 @@ def index():
             limited.append(c)
             count_per_platform[c['resource']] += 1
 
-    return render_template("index.html", contests=limited, platforms=platform_filter, time_filter=time_filter)
+    return limited
+
+# ========================================
+# CONTEXT PROCESSOR
+# ========================================
+@app.context_processor
+def inject_now():
+    now_ist = datetime.now(IST)
+    last_update = CacheMetadata.get_last_update()
+    last_update_ist = None
+    if last_update:
+        last_update_ist = last_update.astimezone(IST)
+
+    return {
+        'datetime': datetime,
+        'now_ist': now_ist,
+        'last_update': last_update_ist
+    }
+def run_background_refresh():
+    """
+    Helper function to run contest refresh in background.
+    Must be called with app context for database access.
+    """
+    with app.app_context():
+        try:
+            print("🔄 Background fetch started...")
+            fetch_and_update_contests()
+            print("✅ Background fetch completed")
+        except Exception as e:
+            print(f"❌ Background fetch error: {e}")
+
+
+# ========================================
+# MAIN ROUTES
+# ========================================
+@app.route("/", methods=["GET"])
+def index():
+    """Main page - optimized for fast load"""
+    platform_filter = request.args.getlist("platform")
+    time_filter = request.args.get("time")
+
+    # Strategy 1: Check in-memory cache FIRST (fastest)
+    if _cache.get('contests') and _cache.get('last_fetch'):
+        cache_age_minutes = (datetime.now(UTC) - _cache['last_fetch']).total_seconds() / 60
+
+        if cache_age_minutes < 10:
+            # Cache is fresh - use it immediately!
+            print(f"⚡ Using in-memory cache ({cache_age_minutes:.1f} min old)")
+            contests = get_contests_from_memory_cache(platform_filter, time_filter)
+            return render_template("index.html", contests=contests,
+                                   platforms=platform_filter, time_filter=time_filter)
+
+        elif cache_age_minutes < 30:
+            # Cache is stale but usable - refresh in background
+            print(f"⏰ Cache stale ({cache_age_minutes:.1f} min), refreshing in background")
+
+            if not _cache.get('fetch_in_progress'):
+                # Start background refresh (non-blocking)
+                refresh_thread = threading.Thread(target=run_background_refresh, daemon=True)
+                refresh_thread.start()
+
+            # Serve stale data immediately (user doesn't wait)
+            contests = get_contests_from_memory_cache(platform_filter, time_filter)
+            return render_template("index.html", contests=contests,
+                                   platforms=platform_filter, time_filter=time_filter)
+
+    # Strategy 2: Check database (slower but persistent)
+    try:
+        print("🔍 Checking database for cached data...")
+        last_update = CacheMetadata.get_last_update()
+
+        if last_update:
+            minutes_since = (datetime.now(UTC) - last_update).total_seconds() / 60
+
+            if minutes_since < 10:
+                # Database has fresh data
+                print(f"✅ Database cache fresh ({minutes_since:.1f} min old)")
+                contests = get_contests_from_db(platform_filter, time_filter)
+
+                # Update in-memory cache for next time
+                _cache['last_fetch'] = last_update
+
+                return render_template("index.html", contests=contests,
+                                       platforms=platform_filter, time_filter=time_filter)
+
+    except Exception as e:
+        print(f"⚠️ Database check failed: {e}")
+        # If database fails but we have any cache, use it
+        if _cache.get('contests'):
+            print("🔄 Using stale cache due to database error")
+            contests = get_contests_from_memory_cache(platform_filter, time_filter)
+            return render_template("index.html", contests=contests,
+                                   platforms=platform_filter, time_filter=time_filter)
+
+    # Strategy 3: No cache available - must fetch (blocking, only first time)
+    print("📡 No cache available, fetching from API...")
+    success = fetch_and_update_contests()
+
+    if success:
+        contests = get_contests_from_db(platform_filter, time_filter)
+    else:
+        # Fetch failed, use whatever cache we have
+        contests = get_contests_from_memory_cache(platform_filter, time_filter) if _cache.get('contests') else []
+
+    return render_template("index.html", contests=contests,
+                           platforms=platform_filter, time_filter=time_filter)
 
 
 @app.route('/contact', methods=['GET', 'POST'])
