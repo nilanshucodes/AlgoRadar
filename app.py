@@ -12,6 +12,9 @@ import time
 import threading
 from sqlalchemy import text
 
+# Make IST timezone-aware
+IST = pytz.timezone('Asia/Kolkata')
+UTC = pytz.UTC
 load_dotenv()
 
 app = Flask(__name__)
