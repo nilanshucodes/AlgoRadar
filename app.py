@@ -56,13 +56,12 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 
 db = SQLAlchemy(app)
 
-# Cache Configuration
-cache = Cache(app, config={
-    'CACHE_TYPE': 'SimpleCache',
-    'CACHE_DEFAULT_TIMEOUT': 600
-})
-
-IST = pytz.timezone('Asia/Kolkata')
+# In-memory fallback cache (for when DB is slow/unavailable)
+_cache = {
+    'contests': [],
+    'last_fetch': None,
+    'fetch_in_progress': False
+}
 
 
 # ========================================
