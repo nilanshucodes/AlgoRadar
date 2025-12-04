@@ -67,6 +67,82 @@ _cache = {
 # ========================================
 # DATABASE MODELS
 # ========================================
+class Contest(db.Model):
+    """Stores contest data from CList API"""
+    __tablename__ = 'contests'
+
+    id = db.Column(db.Integer, primary_key=True)
+    contest_id = db.Column(db.String(255), unique=True, nullable=False)
+    event = db.Column(db.String(500), nullable=False)
+    resource = db.Column(db.String(100), nullable=False)
+    href = db.Column(db.String(1000))
+    start = db.Column(db.DateTime, nullable=False)
+    end = db.Column(db.DateTime, nullable=False)
+    duration = db.Column(db.Integer)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC),
+                           onupdate=lambda: datetime.now(UTC))
+
+    def __repr__(self):
+        return f'<Contest {self.event} on {self.resource}>'
+
+    def to_dict(self):
+        """Convert to dictionary for template rendering"""
+        start_utc = self.start if self.start.tzinfo else UTC.localize(self.start)
+        end_utc = self.end if self.end.tzinfo else UTC.localize(self.end)
+        start_ist = start_utc.astimezone(IST)
+        end_ist = end_utc.astimezone(IST)
+
+        return {
+            'event': self.event,
+            'resource': self.resource,
+            'href': self.href,
+            'start_date': start_ist.strftime("%d-%m-%Y"),
+            'start_time': start_ist.strftime("%H:%M"),
+            'end_ist': end_ist.strftime("%H:%M"),
+            'start': start_utc,
+            'duration': self.duration
+        }
+
+
+class CacheMetadata(db.Model):
+    """Tracks when contests were last updated"""
+    __tablename__ = 'cache_metadata'
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    last_updated = db.Column(db.DateTime, nullable=False)
+
+    @staticmethod
+    def get_last_update():
+        try:
+            meta = CacheMetadata.query.filter_by(key='contests_last_update').first()
+            if not meta:
+                return None
+            if meta.last_updated.tzinfo is None:
+                return UTC.localize(meta.last_updated)
+            return meta.last_updated
+        except Exception as e:
+            print(f"️ Error getting last update: {e}")
+            return None
+
+    @staticmethod
+    def set_last_update():
+        try:
+            meta = CacheMetadata.query.filter_by(key='contests_last_update').first()
+            now_utc = datetime.now(UTC)
+
+            if not meta:
+                meta = CacheMetadata(key='contests_last_update', last_updated=now_utc)
+                db.session.add(meta)
+            else:
+                meta.last_updated = now_utc
+            db.session.commit()
+        except Exception as e:
+            print(f"️ Error setting last update: {e}")
+            db.session.rollback()
+
+
 class ContactMessage(db.Model):
     __tablename__ = 'contact_messages'
 
