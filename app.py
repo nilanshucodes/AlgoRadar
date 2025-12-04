@@ -173,6 +173,20 @@ def admin_required(f):
 # ========================================
 # CONTEST DATA MANAGEMENT
 # ========================================
+def extract_resource_host(resource):
+    """
+    Extract the resource host from CList API resource field.
+    CList API returns resource as an object like {"host": "codeforces.com", "name": "Codeforces", "id": 1}
+    This function handles both dict and string formats.
+    """
+    if isinstance(resource, dict):
+        return resource.get('host', '')
+    elif isinstance(resource, str):
+        return resource
+    else:
+        return str(resource)
+
+
 def fetch_and_update_contests():
     """
     Fetches contests from CList API and updates database using BULK operations.
@@ -234,9 +248,7 @@ def fetch_and_update_contests():
                 end_dt = UTC.localize(end_dt)
 
             # Extract resource host - CList API returns resource as an object with 'host' key
-            resource = c.get('resource', '')
-            if isinstance(resource, dict):
-                resource = resource.get('host', '')
+            resource = extract_resource_host(c.get('resource', ''))
             
             contest_data = {
                 'contest_id': contest_id,
@@ -441,12 +453,7 @@ def get_contests_from_memory_cache(platform_filter=None, time_filter=None):
         try:
             # Platform filter - handle resource as object or string
             raw_resource = c.get('resource', '')
-            if isinstance(raw_resource, dict):
-                resource = raw_resource.get('host', '').lower()
-            elif isinstance(raw_resource, str):
-                resource = raw_resource.lower()
-            else:
-                resource = str(raw_resource).lower()
+            resource = extract_resource_host(raw_resource).lower()
             
             if platform_filter and resource not in [p.lower() for p in platform_filter]:
                 continue
@@ -489,8 +496,8 @@ def get_contests_from_memory_cache(platform_filter=None, time_filter=None):
                     if start_ist > end_of_month:
                         continue
 
-            # Get resource host for display - reuse the already extracted resource
-            display_resource = raw_resource.get('host', '') if isinstance(raw_resource, dict) else (raw_resource if isinstance(raw_resource, str) else str(raw_resource))
+            # Get resource host for display
+            display_resource = extract_resource_host(raw_resource)
             
             filtered.append({
                 'event': c['event'],
