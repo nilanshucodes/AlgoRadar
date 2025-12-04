@@ -671,6 +671,80 @@ def contact():
 
 
 # ========================================
+# HEALTH CHECK & WARMUP ENDPOINTS (for UptimeRobot)
+# ========================================
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Lightweight health check for UptimeRobot"""
+    try:
+        # Quick database ping
+        db.session.execute(text('SELECT 1'))
+
+        # Check if we have contests
+        contest_count = Contest.query.count()
+
+        # Check last update
+        last_update = CacheMetadata.get_last_update()
+        minutes_since = None
+        if last_update:
+            minutes_since = (datetime.now(UTC) - last_update).total_seconds() / 60
+
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "contests": contest_count,
+            "last_update_minutes_ago": round(minutes_since, 1) if minutes_since else None,
+            "cache_fresh": minutes_since < 10 if minutes_since else False
+        }, 200
+
+    except Exception as e:
+        return {
+            "status": "degraded",
+            "error": str(e)
+        }, 200
+
+
+@app.route("/api/warmup", methods=["GET"])
+def warmup():
+    """Warmup endpoint - UptimeRobot pings this to keep cache fresh"""
+    try:
+        last_update = CacheMetadata.get_last_update()
+
+        if last_update:
+            minutes_since = (datetime.now(UTC) - last_update).total_seconds() / 60
+
+            if minutes_since > 10 and not _cache.get('fetch_in_progress'):
+                print("🔄 Warmup triggered background refresh")
+                refresh_thread = threading.Thread(target=run_background_refresh, daemon=True)
+                refresh_thread.start()
+
+                return {
+                    "status": "refreshing",
+                    "message": "Background refresh triggered",
+                    "last_update_minutes_ago": round(minutes_since, 1)
+                }, 200
+            else:
+                return {
+                    "status": "fresh",
+                    "message": "Cache is fresh",
+                    "last_update_minutes_ago": round(minutes_since, 1)
+                }, 200
+        else:
+            if not _cache.get('fetch_in_progress'):
+                refresh_thread = threading.Thread(target=run_background_refresh, daemon=True)
+                refresh_thread.start()
+
+            return {
+                "status": "initializing",
+                "message": "First time setup"
+            }, 200
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }, 500
+# ========================================
 # ADMIN ROUTES
 # ========================================
 @app.route('/admin/login', methods=['GET', 'POST'])
