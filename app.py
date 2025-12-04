@@ -617,3 +617,11 @@ def seed_contests():
         print(" Failed to seed contests!")
 
 
+@app.cli.command('cleanup-old')
+def cleanup_old_contests():
+    """Remove contests older than 30 days"""
+    cutoff_date = datetime.now(UTC) - timedelta(days=30)
+    deleted = Contest.query.filter(Contest.start < cutoff_date).delete()
+    db.session.commit()
+    print(f" Deleted {deleted} old contests!")
+
