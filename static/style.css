@@ -1,4 +1,3 @@
-/* Reset and Base Styles */
 * {
     margin: 0;
     padding: 0;
@@ -12,7 +11,6 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-/* Header Styles */
 header {
     position: fixed;
     top: 0;
@@ -65,7 +63,6 @@ header nav a:hover {
     padding: 5px;
 }
 
-/* Main Content */
 main {
     margin-top: 80px;
     padding: 20px;
@@ -83,7 +80,6 @@ main {
     margin-bottom: 1.5rem;
 }
 
-/* Headings */
 h2.text-center, h2.mb-3 {
     text-align: center;
     font-size: 28px;
@@ -92,98 +88,6 @@ h2.text-center, h2.mb-3 {
     color: #007bff;
 }
 
-/* Form Styles */
-form {
-    margin-bottom: 20px;
-}
-
-form .d-flex {
-    display: flex;
-}
-
-form .flex-wrap {
-    flex-wrap: wrap;
-}
-
-form .gap-2 {
-    gap: 10px;
-}
-
-form label {
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.2s;
-}
-
-form label:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-}
-
-form input[type="checkbox"] {
-    margin-right: 5px;
-    cursor: pointer;
-}
-
-.mt-2 {
-    margin-top: 10px;
-}
-
-form select, .form-select {
-    padding: 5px 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: white;
-    cursor: pointer;
-}
-
-.w-auto {
-    width: auto;
-}
-
-.d-inline {
-    display: inline-block;
-}
-
-form button, .btn {
-    padding: 6px 12px;
-    cursor: pointer;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: background-color 0.2s;
-}
-
-form button:hover, .btn:hover {
-    background-color: #0056b3;
-}
-
-.btn-primary {
-    background-color: #007bff;
-}
-
-.btn-sm {
-    padding: 4px 8px;
-    font-size: 13px;
-}
-
-.btn-outline-primary {
-    background-color: transparent;
-    color: #007bff;
-    border: 1px solid #007bff;
-}
-
-.btn-outline-primary:hover {
-    background-color: #007bff;
-    color: white;
-}
-
-/* Switch Button */
 #switchBtn {
     display: block;
     margin: 0 auto 20px;
@@ -200,7 +104,6 @@ form button:hover, .btn:hover {
     background-color: #218838;
 }
 
-/* Table Styles */
 table, .table {
     width: 100%;
     border-collapse: collapse;
@@ -248,7 +151,6 @@ table tr:nth-child(even), .table-hover tbody tr:hover {
     margin-right: 8px;
 }
 
-/* Card View */
 .card-container {
     display: none;
     gap: 20px;
@@ -287,13 +189,11 @@ table tr:nth-child(even), .table-hover tbody tr:hover {
     opacity: 0.95;
 }
 
-/* Platform Colors */
 .platform-codeforces { background: linear-gradient(135deg, #1f8ef1, #0d6efd); }
 .platform-codechef { background: linear-gradient(135deg, #fb641b, #d9541e); }
 .platform-atcoder { background: linear-gradient(135deg, #3c3c3c, #1a1a1a); }
 .platform-leetcode { background: linear-gradient(135deg, #ffa116, #f89c0e); }
 
-/* Footer */
 footer {
     text-align: center;
     margin-top: 40px;
@@ -311,7 +211,6 @@ footer a:hover {
     text-decoration: underline;
 }
 
-/* Contact Page Styles */
 .contact-page {
     max-width: 1200px;
     margin: 0 auto;
@@ -337,7 +236,6 @@ footer a:hover {
     line-height: 1.5;
 }
 
-/* Contact Form */
 .contact-form-section {
     background: white;
     padding: 30px;
@@ -399,7 +297,6 @@ footer a:hover {
     align-self: flex-start;
 }
 
-/* Alert Messages */
 .alert {
     padding: 12px 15px;
     border-radius: 8px;
@@ -419,7 +316,6 @@ footer a:hover {
     border: 1px solid #f5c6cb;
 }
 
-/* Direct Contact Links */
 .direct-contact {
     background: white;
     padding: 30px;
@@ -468,7 +364,6 @@ footer a:hover {
     display: block;
 }
 
-/* GitHub icon - default black for light mode */
 .github-icon svg path {
     fill: #181717;
 }
@@ -489,7 +384,6 @@ footer a:hover {
     color: #666;
 }
 
-/* FAQ Section */
 .faq-section {
     background: white;
     padding: 30px;
@@ -529,7 +423,6 @@ footer a:hover {
     margin: 0;
 }
 
-/* Social Section */
 .social-section {
     text-align: center;
     background: white;
@@ -576,7 +469,6 @@ footer a:hover {
     height: 24px;
 }
 
-/* Dark Mode */
 body.dark {
     background-color: #1a1a1a;
     color: #e0e0e0;
@@ -649,7 +541,6 @@ body.dark h2.text-center, body.dark h2.mb-3 {
     color: #4da3ff;
 }
 
-/* Dark Mode - Contact Page */
 body.dark .contact-form-section,
 body.dark .direct-contact,
 body.dark .faq-section,
@@ -695,7 +586,6 @@ body.dark .contact-link .icon svg path {
     filter: brightness(1.2);
 }
 
-/* Fix GitHub icon visibility in dark mode */
 body.dark .contact-link .icon svg path[fill="#181717"] {
     fill: #e0e0e0;
 }
@@ -731,7 +621,6 @@ body.dark .social-icon:hover {
     color: white;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     header {
         padding: 10px 15px;
@@ -768,7 +657,6 @@ body.dark .social-icon:hover {
         max-width: 350px;
     }
 
-    /* Contact page mobile */
     .contact-form-section,
     .direct-contact,
     .faq-section,
@@ -799,11 +687,6 @@ body.dark .social-icon:hover {
     }
 }
 
-/* ========================================
-   ADMIN PANEL STYLES
-   ======================================== */
-
-/* Admin Header */
 .admin-header {
     display: flex;
     justify-content: space-between;
@@ -839,7 +722,6 @@ body.dark .social-icon:hover {
     box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
-/* Admin Messages Table - Base Styles */
 .table-bordered {
     width: 100%;
     border-collapse: collapse;
@@ -849,7 +731,6 @@ body.dark .social-icon:hover {
     background-color: white;
 }
 
-/* Table Header */
 .table-bordered thead {
     background: linear-gradient(135deg, #343a40, #495057);
 }
@@ -864,7 +745,6 @@ body.dark .social-icon:hover {
     border: 1px solid #495057;
 }
 
-/* Table Body - Default Rows (Light Mode) */
 .table-bordered tbody tr {
     transition: all 0.2s ease;
     background-color: white;
@@ -888,7 +768,6 @@ body.dark .social-icon:hover {
     border: 1px solid #dee2e6;
 }
 
-/* Read Messages - Dimmed Appearance */
 .table-bordered tbody tr.table-light {
     background-color: #f8f9fa !important;
     opacity: 0.7;
@@ -902,7 +781,6 @@ body.dark .social-icon:hover {
     opacity: 0.85;
 }
 
-/* Email Links */
 .table-bordered tbody a[href^="mailto:"] {
     color: #007bff;
     text-decoration: none;
@@ -914,10 +792,6 @@ body.dark .social-icon:hover {
     color: #0056b3;
     text-decoration: underline;
 }
-
-/* ========================================
-   DARK MODE - ADMIN TABLE
-   ======================================== */
 
 body.dark .table-bordered {
     background-color: #1a1a1a;
@@ -933,7 +807,6 @@ body.dark .table-bordered thead th {
     border-color: #444;
 }
 
-/* Dark Mode - Default Rows */
 body.dark .table-bordered tbody tr {
     background-color: #2d2d2d;
 }
@@ -951,7 +824,6 @@ body.dark .table-bordered tbody td {
     border-color: #444;
 }
 
-/* Dark Mode - Read Messages */
 body.dark .table-bordered tbody tr.table-light {
     background-color: #1a1a1a !important;
     opacity: 0.65;
@@ -965,7 +837,6 @@ body.dark .table-bordered tbody tr.table-light:hover {
     opacity: 0.8;
 }
 
-/* Dark Mode - Email Links */
 body.dark .table-bordered tbody a[href^="mailto:"] {
     color: #4da3ff;
 }
@@ -973,11 +844,6 @@ body.dark .table-bordered tbody a[href^="mailto:"] {
 body.dark .table-bordered tbody a[href^="mailto:"]:hover {
     color: #6bb3ff;
 }
-
-/* ========================================
-   STATUS BADGES & ACTION BUTTONS
-   (Keep existing styles from previous CSS)
-   ======================================== */
 
 .badge {
     padding: 6px 12px;
@@ -1051,7 +917,6 @@ body.dark .table-bordered tbody a[href^="mailto:"]:hover {
     box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
-/* Dark Mode - Action Buttons */
 body.dark .btn-action-read {
     border-color: #28a745;
     color: #4ade80;
@@ -1071,7 +936,7 @@ body.dark .btn-action-delete:hover {
     background-color: #dc3545;
     color: white;
 }
-/* Admin Login Page */
+
 .card {
     border: none;
     border-radius: 12px;
@@ -1121,7 +986,6 @@ body.dark .btn-action-delete:hover {
     color: #007bff;
 }
 
-/* Dark Mode - Admin Panel */
 body.dark .admin-header {
     border-bottom-color: #4da3ff;
 }
@@ -1196,7 +1060,6 @@ body.dark .form-control:focus {
     box-shadow: 0 0 0 3px rgba(77,163,255,0.1);
 }
 
-/* Responsive Design - Admin Panel */
 @media (max-width: 768px) {
     .admin-header {
         flex-direction: column;
@@ -1237,7 +1100,6 @@ body.dark .form-control:focus {
         font-size: 18px;
     }
 
-    /* Stack table cells vertically on mobile */
     .table-bordered thead {
         display: none;
     }
@@ -1276,20 +1138,3 @@ body.dark .form-control:focus {
     }
 }
 
-/* Additional Polish */
-.table-bordered tbody tr.table-light td {
-    color: #6c757d;
-}
-
-body.dark .table-bordered tbody tr.table-light td {
-    color: #999;
-}
-
-/* Smooth transitions */
-* {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-button, .btn, a {
-    transition: all 0.3s ease;
-}
