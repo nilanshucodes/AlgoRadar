@@ -190,3 +190,13 @@ def delete_message(message_id):
     db.session.commit()
     flash('Message deleted successfully.','success')
     return redirect(url_for('view_messages'))
+
+@app.cli.command('init-db')
+def init_db():
+    db.create_all()
+    print("Database tables created successfully!")
+    
+@app.cli.command('drop-db')
+def drop_db():
+    db.drop_all()
+    print("Database tables dropped!")
