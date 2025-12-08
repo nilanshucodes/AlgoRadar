@@ -88,6 +88,96 @@ h2.text-center, h2.mb-3 {
     color: #007bff;
 }
 
+form {
+    margin-bottom: 20px;
+}
+
+form .d-flex {
+    display: flex;
+}
+
+form .flex-wrap {
+    flex-wrap: wrap;
+}
+
+form .gap-2 {
+    gap: 10px;
+}
+
+form label {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+form label:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+form input[type="checkbox"] {
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.mt-2 {
+    margin-top: 10px;
+}
+
+form select, .form-select {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.w-auto {
+    width: auto;
+}
+
+.d-inline {
+    display: inline-block;
+}
+
+form button, .btn {
+    padding: 6px 12px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+form button:hover, .btn:hover {
+    background-color: #0056b3;
+}
+
+.btn-primary {
+    background-color: #007bff;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 13px;
+}
+
+.btn-outline-primary {
+    background-color: transparent;
+    color: #007bff;
+    border: 1px solid #007bff;
+}
+
+.btn-outline-primary:hover {
+    background-color: #007bff;
+    color: white;
+}
+
 #switchBtn {
     display: block;
     margin: 0 auto 20px;
