@@ -47,7 +47,8 @@ While platforms like CList exist, AlgoRadar offers a focused, streamlined experi
 
 ## Screenshots
 
-*(Add screenshots here)*
+<img width="1279" height="934" alt="Screenshot 2025-12-09 at 03 04 19" src="https://github.com/user-attachments/assets/52d47a91-b133-4a14-982d-e553d9d9e81d" />
+
 
 ## Tech Stack
 
@@ -151,16 +152,14 @@ algoradar/
 ├── .gitignore                 # Git ignore rules
 ├── static/
 │   ├── style.css              # Styles
-│   ├── script.js              # Client-side logic
 │   └── images/                # Logo and assets
 ├── templates/
-│   ├── base.html              # Base template
-│   ├── index.html             # Contest listing
-│   ├── contact.html           # Contact form
-│   ├── admin_login.html       # Admin authentication
-│   └── admin_messages.html    # Message management
-└── instance/
-    └── fallback.db            # SQLite database (local)
+    ├── base.html              # Base template
+    ├── index.html             # Contest listing
+    ├── contact.html           # Contact form
+    ├── admin_login.html       # Admin authentication
+    └── admin_messages.html    # Message management
+
 ```
 
 ## Usage
