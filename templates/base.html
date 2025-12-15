@@ -19,6 +19,7 @@
                 <ul>
                     <li><a href="{{ url_for('index') }}">Home</a></li>
                     <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li><a href="{{url_for('privacy')}}">Privacy</a></li>
                     {% if session.get('admin_logged_in') %}
                     <li><a href="{{ url_for('view_messages') }}">Admin Panel</a></li>
 
@@ -48,10 +49,11 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer>
+   <footer>
     <p>&copy; 2025 AlgoRadar. Built with ❤️ for competitive programmers.</p>
     <p>
-        <a href="{{ url_for('contact') }}">Contact Us</a>
+        <a href="{{ url_for('contact') }}">Contact Us</a> | 
+        <a href="{{ url_for('privacy') }}">Privacy Policy</a>
     </p>
 </footer>
 

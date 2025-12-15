@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy - AlgoRadar{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <h2 class="text-center mb-3">Privacy Policy</h2>
+        <p style="text-align: center; color: #666; font-size: 14px; margin-bottom: 30px;">Last updated: December 16, 2024</p>
+
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #007bff;">
+            <p style="margin: 0;"><strong>Short version:</strong> We don't collect your data. That's it. This page exists because Google requires it for Chrome extensions.</p>
+        </div>
+
+        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <h3 style="color: #007bff; margin-bottom: 15px;">What This Covers</h3>
+            <p>This privacy policy applies to both:</p>
+            <ul style="line-height: 1.8;">
+                <li>AlgoRadar website (what you're on right now)</li>
+                <li>AlgoRadar Chrome extension (if you have it installed)</li>
+            </ul>
+        </div>
+
+        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <h3 style="color: #007bff; margin-bottom: 15px;">Data Collection</h3>
+            <p><strong>Website:</strong> We don't use cookies, trackers, or analytics. Vercel (our hosting platform) collects basic traffic stats like page views, but that's about it.</p>
+            
+            <p style="margin-top: 20px;"><strong>Chrome Extension:</strong> Stores contest data locally on your computer so it loads faster. This data never leaves your device. We don't see it, track it, or want it.</p>
+
+            <p style="margin-top: 20px;"><strong>Contact Form:</strong> If you fill out our contact form, we obviously need your email to reply to you. We store your message in our database and that's it. Won't spam you or sell it.</p>
+        </div>
+
+        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <h3 style="color: #007bff; margin-bottom: 15px;">What the Extension Does</h3>
+            <p>The Chrome extension needs a few permissions to work:</p>
+            <ul style="line-height: 1.8;">
+                <li><strong>Storage:</strong> Saves contest info on your computer so it doesn't have to reload everything each time</li>
+                <li><strong>Alarms:</strong> Auto-refreshes contest data every 20 minutes so you see new contests</li>
+                <li><strong>Network Access:</strong> Connects to our server to get contest data from CLIST API</li>
+            </ul>
+            <p style="margin-top: 15px;">That's literally all it does. No shady stuff.</p>
+        </div>
+
+        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <h3 style="color: #007bff; margin-bottom: 15px;">Third-Party Services</h3>
+            <p><strong>CLIST:</strong> We get all contest data from <a href="https://clist.by" target="_blank" style="color: #007bff;">clist.by</a>. Their API is public and we don't send them any info about you.</p>
+            
+            <p style="margin-top: 15px;"><strong>Vercel:</strong> Hosts our website and backend. They handle the infrastructure but don't track users beyond basic server logs.</p>
+        </div>
+
+        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <h3 style="color: #007bff; margin-bottom: 15px;">Your Data Rights</h3>
+            <p>Since we barely collect anything, there's not much to do here. But:</p>
+            <ul style="line-height: 1.8;">
+                <li>Contact form messages? Email us and we'll delete them</li>
+                <li>Extension data? Just uninstall it and everything's gone</li>
+                <li>Want proof? Check our code on <a href="https://github.com/nilanshucodes/algoradar" target="_blank" style="color: #007bff;">GitHub</a></li>
+            </ul>
+        </div>
+
+        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <h3 style="color: #007bff; margin-bottom: 15px;">Updates to This Policy</h3>
+            <p>If we ever change how we handle data (unlikely), we'll update this page and let you know. We're not planning to suddenly start tracking users or anything weird like that.</p>
+        </div>
+
+        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <h3 style="color: #007bff; margin-bottom: 15px;">Questions?</h3>
+            <p>Hit us up:</p>
+            <ul style="line-height: 1.8;">
+                <li>Email: <a href="mailto:your-email@example.com" style="color: #007bff;">your-email@example.com</a></li>
+                <li>Contact form: <a href="{{ url_for('contact') }}" style="color: #007bff;">Right here</a></li>
+                <li>GitHub issues: <a href="https://github.com/nilanshucodes/algoradar/issues" target="_blank" style="color: #007bff;">Report bugs or ask questions</a></li>
+            </ul>
+        </div>
+
+        <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; text-align: center; border: 2px solid #007bff;">
+            <p style="margin: 0; color: #333;"><strong>TL;DR:</strong> We're developers who hate data collection as much as you do. AlgoRadar exists to help you not miss contests. That's it.</p>
+        </div>
+
+        <p style="text-align: center; margin-top: 30px; color: #666; font-size: 13px;">
+            This policy complies with GDPR, CCPA, and Chrome Web Store policies because we literally don't collect anything to worry about.
+        </p>
+    </div>
+</div>
+
+<style>
+body.dark .container > div > div {
+    background: #2d2d2d !important;
+    color: #e0e0e0;
+}
+
+body.dark .container > div > div[style*="background: #f8f9fa"] {
+    background: rgba(77, 163, 255, 0.1) !important;
+}
+
+body.dark .container > div > div[style*="background: #e7f3ff"] {
+    background: rgba(77, 163, 255, 0.15) !important;
+    border-color: #4da3ff !important;
+}
+
+body.dark .container h3 {
+    color: #4da3ff !important;
+}
+
+body.dark .container p,
+body.dark .container li {
+    color: #b0b0b0;
+}
+
+body.dark .container a {
+    color: #4da3ff !important;
+}
+
+body.dark .container strong {
+    color: #e0e0e0;
+}
+</style>
+{% endblock %}
