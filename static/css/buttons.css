@@ -1,0 +1,128 @@
+/* Button Styles */
+form button, .btn {
+    padding: 6px 12px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+form button:hover, .btn:hover {
+    background-color: #0056b3;
+}
+
+.btn-primary {
+    background-color: #007bff;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 13px;
+}
+
+.btn-outline-primary {
+    background-color: transparent;
+    color: #007bff;
+    border: 1px solid #007bff;
+}
+
+.btn-outline-primary:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+#switchBtn {
+    display: block;
+    margin: 0 auto 20px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+#switchBtn:hover {
+    background-color: #218838;
+}
+
+.btn-submit {
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    align-self: flex-start;
+}
+
+.btn-logout {
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 2px solid #dc3545;
+    background-color: transparent;
+    color: #dc3545;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-logout:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-action {
+    padding: 8px 14px;
+    border: 2px solid;
+    background-color: transparent;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    min-width: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-action-read {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.btn-action-read:hover {
+    background-color: #28a745;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-action-delete {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-action-delete:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.action-buttons form {
+    margin: 0;
+}

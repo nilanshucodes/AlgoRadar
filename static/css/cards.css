@@ -1,0 +1,57 @@
+/* Card Styles */
+.card-container {
+    display: none;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.contest-card {
+    width: 280px;
+    padding: 20px;
+    border-radius: 12px;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+}
+
+.contest-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+.contest-card h3 {
+    font-size: 18px;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.contest-card p {
+    font-size: 14px;
+    opacity: 0.95;
+}
+
+.platform-codeforces { background: linear-gradient(135deg, #1f8ef1, #0d6efd); }
+.platform-codechef { background: linear-gradient(135deg, #fb641b, #d9541e); }
+.platform-atcoder { background: linear-gradient(135deg, #3c3c3c, #1a1a1a); }
+.platform-leetcode { background: linear-gradient(135deg, #ffa116, #f89c0e); }
+
+.card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+.card.shadow {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}

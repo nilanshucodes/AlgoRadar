@@ -1,0 +1,15 @@
+/* Admin Panel Styles */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #007bff;
+}
+
+.admin-header h2 {
+    margin: 0;
+    font-size: 28px;
+    color: #007bff;
+}

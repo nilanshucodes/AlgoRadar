@@ -1,0 +1,28 @@
+/* 
+ * AlgoRadar - Modular CSS Structure
+ * Main stylesheet that imports all CSS modules
+ */
+
+/* Base Styles - Reset and core typography */
+@import url('base.css');
+
+/* Layout Components */
+@import url('header.css');
+
+/* UI Components */
+@import url('forms.css');
+@import url('buttons.css');
+@import url('tables.css');
+@import url('cards.css');
+
+/* Page-Specific Styles */
+@import url('contact.css');
+@import url('admin.css');
+
+/* Theme & Utilities */
+@import url('utilities.css');
+@import url('theme-dark.css');
+@import url('transitions.css');
+
+/* Responsive Design */
+@import url('responsive.css');
