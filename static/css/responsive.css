@@ -1,0 +1,143 @@
+/* Responsive Design - Media Queries */
+
+/* Tablet and Mobile Styles */
+@media (max-width: 768px) {
+    header {
+        padding: 10px 15px;
+    }
+
+    .header-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    header nav ul {
+        gap: 15px;
+    }
+
+    main {
+        margin-top: 120px;
+        padding: 15px;
+    }
+
+    table, #contestTable {
+        display: none;
+    }
+
+    .card-container {
+        display: flex;
+    }
+
+    #switchBtn {
+        display: none;
+    }
+
+    .contest-card {
+        width: 100%;
+        max-width: 350px;
+    }
+
+    .contact-form-section,
+    .direct-contact,
+    .faq-section,
+    .social-section {
+        padding: 20px;
+    }
+
+    .contact-links {
+        grid-template-columns: 1fr;
+    }
+
+    .faq-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .admin-header h2 {
+        font-size: 22px;
+    }
+
+    .btn-logout {
+        align-self: flex-end;
+    }
+
+    .table-bordered {
+        font-size: 13px;
+    }
+
+    .table-bordered thead th,
+    .table-bordered tbody td {
+        padding: 10px 8px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .btn-action {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* Mobile Only Styles */
+@media (max-width: 480px) {
+    h2.text-center, h2.mb-3 {
+        font-size: 22px;
+    }
+    
+    form .d-flex {
+        flex-direction: column;
+    }
+    
+    .contest-card h3 {
+        font-size: 16px;
+    }
+
+    .admin-header h2 {
+        font-size: 18px;
+    }
+
+    .table-bordered thead {
+        display: none;
+    }
+
+    .table-bordered tbody tr {
+        display: block;
+        margin-bottom: 20px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .table-bordered tbody td {
+        display: block;
+        text-align: left;
+        padding: 8px 10px;
+        border: none;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .table-bordered tbody td:last-child {
+        border-bottom: none;
+    }
+
+    .table-bordered tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        display: inline-block;
+        margin-right: 10px;
+        color: #007bff;
+    }
+
+    .action-buttons {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+}
