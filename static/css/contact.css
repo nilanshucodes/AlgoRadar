@@ -1,0 +1,197 @@
+/* Contact Page Styles */
+.contact-page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.contact-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.contact-intro {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 20px 0;
+}
+
+.intro-text {
+    font-size: 15px;
+    color: #666;
+    max-width: 800px;
+    margin: 10px auto 0;
+    line-height: 1.5;
+}
+
+.contact-form-section {
+    background: white;
+    padding: 30px;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.contact-form-section h3 {
+    margin-bottom: 20px;
+    color: #007bff;
+    font-size: 22px;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.direct-contact {
+    background: white;
+    padding: 30px;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.direct-contact h3 {
+    margin-bottom: 20px;
+    color: #007bff;
+    font-size: 22px;
+}
+
+.contact-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.contact-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contact-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.contact-link .icon {
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+}
+
+.contact-link .icon svg {
+    display: block;
+}
+
+.github-icon svg path {
+    fill: #181717;
+}
+
+.link-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.link-content strong {
+    font-size: 16px;
+    color: #007bff;
+}
+
+.link-content span {
+    font-size: 13px;
+    color: #666;
+}
+
+.faq-section {
+    background: white;
+    padding: 30px;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.faq-section h3 {
+    margin-bottom: 20px;
+    color: #007bff;
+    font-size: 22px;
+}
+
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.faq-item {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.faq-item h4 {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #333;
+}
+
+.faq-item p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #666;
+    margin: 0;
+}
+
+.social-section {
+    text-align: center;
+    background: white;
+    padding: 30px;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.social-section h3 {
+    margin-bottom: 20px;
+    color: #007bff;
+    font-size: 22px;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.social-icon:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+}
+
+.social-icon svg {
+    width: 24px;
+    height: 24px;
+}
