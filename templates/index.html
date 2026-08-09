@@ -2,10 +2,10 @@
 {% block title %}AlgoRadar{% endblock %}
 {% block content %}
 {% set platform_logos = {
-    'codeforces.com': url_for('static', filename='images/codeforces.png'),
-    'codechef.com': url_for('static', filename='images/codechef.png'),
-    'atcoder.jp': url_for('static', filename='images/atcoder.png'),
-    'leetcode.com': url_for('static', filename='images/leetcode.png')
+'codeforces.com': url_for('static', filename='images/codeforces.png'),
+'codechef.com': url_for('static', filename='images/codechef.png'),
+'atcoder.jp': url_for('static', filename='images/atcoder.png'),
+'leetcode.com': url_for('static', filename='images/leetcode.png')
 } %}
 
 
@@ -16,18 +16,23 @@
     <!-- Filters -->
     <form method="get" class="mb-3">
         <div class="d-flex flex-wrap gap-2">
-            <label><input type="checkbox" name="platform" value="codeforces.com" {% if 'codeforces.com' in platforms %}checked{% endif %}> Codeforces</label>
-            <label><input type="checkbox" name="platform" value="atcoder.jp" {% if 'atcoder.jp' in platforms %}checked{% endif %}> AtCoder</label>
-            <label><input type="checkbox" name="platform" value="leetcode.com" {% if 'leetcode.com' in platforms %}checked{% endif %}> LeetCode</label>
-            <label><input type="checkbox" name="platform" value="codechef.com" {% if 'codechef.com' in platforms %}checked{% endif %}> CodeChef</label>
-            <label><input type="checkbox" name="platform" value="" {% if not platforms %}checked{% endif %}> All Contests</label>
+            <label><input type="checkbox" name="platform" value="codeforces.com" {% if 'codeforces.com' in platforms
+                    %}checked{% endif %}> Codeforces</label>
+            <label><input type="checkbox" name="platform" value="atcoder.jp" {% if 'atcoder.jp' in platforms %}checked{%
+                    endif %}> AtCoder</label>
+            <label><input type="checkbox" name="platform" value="leetcode.com" {% if 'leetcode.com' in platforms
+                    %}checked{% endif %}> LeetCode</label>
+            <label><input type="checkbox" name="platform" value="codechef.com" {% if 'codechef.com' in platforms
+                    %}checked{% endif %}> CodeChef</label>
+            <label><input type="checkbox" id="all-contests" {% if not platforms %}checked{% endif %}> All
+                Contests</label>
         </div>
         <div class="mt-2">
             <select name="time" class="form-select w-auto d-inline">
                 <option value="">All Time</option>
-                <option value="today" {% if time_filter == 'today' %}selected{% endif %}>Today</option>
-                <option value="week" {% if time_filter == 'week' %}selected{% endif %}>This Week</option>
-                <option value="month" {% if time_filter == 'month' %}selected{% endif %}>This Month</option>
+                <option value="today" {% if time_filter=='today' %}selected{% endif %}>Today</option>
+                <option value="week" {% if time_filter=='week' %}selected{% endif %}>This Week</option>
+                <option value="month" {% if time_filter=='month' %}selected{% endif %}>This Month</option>
             </select>
             <button type="submit" class="btn btn-primary btn-sm">Apply</button>
         </div>
@@ -52,7 +57,7 @@
             <tr>
                 <td>
                     {% if contest.resource in platform_logos %}
-                         <img src="{{ platform_logos[contest.resource] }}" alt="{{ contest.resource }}" class="table-logo">
+                    <img src="{{ platform_logos[contest.resource] }}" alt="{{ contest.resource }}" class="table-logo">
                     {% endif %}
                     {{ contest.resource }}
                 </td>
@@ -69,12 +74,13 @@
     <!-- Card view -->
     <div class="card-container" id="cardContainer">
         {% for c in contests %}
-            {% if c.resource in ['codeforces.com','codechef.com','atcoder.jp','leetcode.com'] or c.resource in platforms %}
-            <div class="contest-card platform-{{ c.resource.split('.')[0] }}" onclick="window.open('{{ c.href }}', '_blank')">
-                <h3>{{ c.event }}</h3>
-                <p>{{ c.start_date }} | {{ c.start_time }} - {{ c.end_ist }}</p>
-            </div>
-            {% endif %}
+        {% if c.resource in ['codeforces.com','codechef.com','atcoder.jp','leetcode.com'] or c.resource in platforms %}
+        <div class="contest-card platform-{{ c.resource.split('.')[0] }}"
+            onclick="window.open('{{ c.href }}', '_blank')">
+            <h3>{{ c.event }}</h3>
+            <p>{{ c.start_date }} | {{ c.start_time }} - {{ c.end_ist }}</p>
+        </div>
+        {% endif %}
         {% endfor %}
     </div>
 
@@ -85,7 +91,7 @@
         let tableView = true;
 
         switchBtn.addEventListener("click", () => {
-            if(tableView){
+            if (tableView) {
                 table.style.display = "none";
                 cards.style.display = "flex";
                 switchBtn.textContent = "Switch to Table View";
@@ -96,6 +102,28 @@
             }
             tableView = !tableView;
         });
+
+        // script when user clicks "all contests" checkbox, uncheck all other checkboxes
+        const allContestsCheckbox = document.querySelector('#all-contests');
+        const platformCheckboxes = document.querySelectorAll('input[name="platform"]');
+
+        allContestsCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                platformCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                })
+            }
+        });
+
+        // when user clicks any platform checkbox, uncheck "all contests" checkbox
+        platformCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                const anyChecked = [...platformCheckboxes].some(item => item.checked)
+
+                allContestsCheckbox.checked = !anyChecked;
+            })
+        });
+
     </script>
 </div>
 {% endblock %}
